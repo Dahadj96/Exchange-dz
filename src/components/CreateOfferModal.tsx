@@ -87,9 +87,18 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateO
                 min_amount: '',
                 max_amount: '',
             });
-        } catch (err: unknown) {
-            console.error('Error creating offer:', err);
-            setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
+        } catch (err: any) {
+            console.error('Error creating offer (Full):', err);
+
+            // Extract Supabase-specific error info
+            const code = err.code || 'UNKNOWN';
+            const message = err.message || 'حدث خطأ غير متوقع';
+            const details = err.details || '';
+            const hint = err.hint || '';
+
+            console.error(`Supabase Error [${code}]: ${message}`, { details, hint });
+
+            setError(`خطأ (${code}): ${message}${details ? ' - ' + details : ''}`);
         } finally {
             setIsLoading(false);
         }
