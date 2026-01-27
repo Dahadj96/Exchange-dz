@@ -87,9 +87,9 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateO
                 min_amount: '',
                 max_amount: '',
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error creating offer:', err);
-            setError(err.message || 'حدث خطأ غير متوقع');
+            setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
         } finally {
             setIsLoading(false);
         }

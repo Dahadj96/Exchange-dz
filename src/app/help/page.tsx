@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, ChevronDown, Book, CreditCard, ShieldCheck, User, Search } from 'lucide-react';
 
-const FAQItem = ({ question, answer }: any) => {
+interface FAQItemProps {
+    question: string;
+    answer: string;
+}
+
+const FAQItem = ({ question, answer }: FAQItemProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (

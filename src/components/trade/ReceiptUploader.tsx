@@ -50,8 +50,8 @@ export const ReceiptUploader = ({ tradeId, onUploadComplete }: ReceiptUploaderPr
             if (updateError) throw updateError;
 
             onUploadComplete(publicUrl);
-        } catch (error: any) {
-            console.error('Error uploading receipt:', error.message);
+        } catch (error: unknown) {
+            console.error('Error uploading receipt:', error instanceof Error ? error.message : 'Unknown error');
             alert('فشل رفع الوصل. يرجى المحاولة مرة أخرى.');
             setPreview(null);
         } finally {

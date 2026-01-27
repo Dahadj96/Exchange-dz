@@ -4,7 +4,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, ArrowDownRight, ArrowUpRight, Clock, Info } from 'lucide-react';
 
-const RateDetail = ({ currency, buy, sell, change, status }: any) => (
+interface RateDetailProps {
+    currency: string;
+    buy: number;
+    sell: number;
+    change: number;
+    status: 'up' | 'down';
+}
+
+const RateDetail = ({ currency, buy, sell, change, status }: RateDetailProps) => (
     <div className="p-8 rounded-[32px] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all">
         <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-4">

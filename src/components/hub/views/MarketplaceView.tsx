@@ -6,7 +6,7 @@ import { Search, Filter, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { BuyOfferModal } from '@/components/marketplace/BuyOfferModal';
-import { Listing, Profile } from '@/types';
+import { Listing, Profile, PlatformType, SupportedCurrency } from '@/types';
 
 export const MarketplaceView = () => {
     const [listings, setListings] = useState<Array<{ listing: Listing; seller: Profile }>>([]);
@@ -31,12 +31,26 @@ export const MarketplaceView = () => {
                 .order('created_at', { ascending: false });
 
             if (data) {
-                const formatted = data.map((item: any) => ({
+                const typedData = data as Array<{
+                    id: string;
+                    user_id: string;
+                    platform: string;
+                    currency_code: string;
+                    rate: number;
+                    stock: number;
+                    min_amount: number;
+                    max_amount: number;
+                    is_active: boolean;
+                    created_at: string;
+                    profiles: Profile;
+                }>;
+
+                const formatted = typedData.map((item) => ({
                     listing: {
                         id: item.id,
                         user_id: item.user_id,
-                        platform: item.platform,
-                        currency_code: item.currency_code,
+                        platform: item.platform as PlatformType,
+                        currency_code: item.currency_code as SupportedCurrency,
                         rate: item.rate,
                         stock: item.stock,
                         min_amount: item.min_amount,

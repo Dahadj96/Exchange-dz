@@ -51,9 +51,9 @@ export const BuyOfferModal = ({ isOpen, onClose, listing, seller }: BuyOfferModa
             // Redirect to trade room
             router.push(`/trade/${trade.id}`);
             onClose();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error creating trade:', err);
-            setError(err.message || 'حدث خطأ غير متوقع');
+            setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
         } finally {
             setIsLoading(false);
         }

@@ -4,7 +4,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Gavel, AlertCircle, CheckCircle2, XCircle, Info } from 'lucide-react';
 
-const RuleSection = ({ title, items, type = 'normal' }: any) => (
+interface RuleSectionProps {
+    title: string;
+    items: string[];
+    type?: 'normal' | 'warning';
+}
+
+const RuleSection = ({ title, items, type = 'normal' }: RuleSectionProps) => (
     <div className={`p-8 rounded-[40px] border shadow-sm ${type === 'warning' ? 'bg-red-50 border-red-100' : 'bg-white border-slate-200'
         }`}>
         <h3 className={`text-2xl font-black mb-6 ${type === 'warning' ? 'text-red-600' : 'text-slate-900'}`}>

@@ -12,13 +12,23 @@ import {
     CheckCircle
 } from 'lucide-react';
 
+interface Dispute {
+    trade_id: string;
+    reason: string;
+    created_at: string;
+    trade: {
+        buyer: { full_name: string };
+        seller: { full_name: string };
+    };
+}
+
 interface AdminDashboardClientProps {
     stats: {
         totalUsers: number;
         activeDisputes: number;
         totalVolume: number;
     };
-    recentDisputes: any[]; // Using any for now to match the complex join structure if needed, or refine type
+    recentDisputes: Dispute[];
 }
 
 export default function AdminDashboardClient({ stats, recentDisputes }: AdminDashboardClientProps) {

@@ -45,7 +45,7 @@ export const ActiveTrades = () => {
             return channel;
         };
 
-        let channelPromise = setupSubscription();
+        const channelPromise = setupSubscription();
 
         return () => {
             channelPromise.then(channel => {
