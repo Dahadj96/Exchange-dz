@@ -15,8 +15,10 @@ export const GlobalHeader = () => {
     const [profile, setProfile] = useState<any>(null);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         // Check current session
         supabase.auth.getSession().then(({ data: { session } }: any) => {
             setUser(session?.user ?? null);
@@ -80,6 +82,8 @@ export const GlobalHeader = () => {
         { href: '/marketplace', label: 'السوق' },
         { href: '/about', label: 'الأخبار' },
     ];
+
+    if (!mounted) return <div className="h-20 bg-white border-b border-slate-200" />;
 
     return (
         <header className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b border-slate-200 overflow-visible">
