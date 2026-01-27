@@ -156,7 +156,7 @@ export default function CreateListingPage() {
                                 >
                                     <div>
                                         <h1 className="text-3xl font-black text-slate-900 mb-2">تحديد السعر والكمية</h1>
-                                        <p className="text-slate-500 font-medium">أدخل المبلغ المتوفر وسعر الصرف لكل 1 وحدة.</p>
+                                        <p className="text-slate-500 font-medium">أدخل المبلغ المتوفر وسعر الصرف لكل 1 DZD.</p>
                                     </div>
 
                                     <div className="space-y-6">

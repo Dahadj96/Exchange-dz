@@ -138,7 +138,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                 </button>
                 <h2 className="text-4xl font-black text-slate-900 mb-2">غرفة التداول</h2>
                 <p className="text-slate-500 font-medium">
-                    تداول {trade?.amount} وحدة من {(trade?.listing as any)?.currency}
+                    تداول {trade?.amount} DZD من {(trade?.listing as any)?.currency}
                 </p>
             </div>
 

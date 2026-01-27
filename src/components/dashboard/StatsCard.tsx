@@ -76,7 +76,7 @@ export const StatsCard = () => {
         {
             icon: DollarSign,
             label: 'الحجم الكلي',
-            value: `${stats.totalVolume.toFixed(0)} وحدة`,
+            value: `${stats.totalVolume.toFixed(2)} DZD`,
             color: 'purple',
         },
         {

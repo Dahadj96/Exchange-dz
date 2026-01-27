@@ -197,7 +197,7 @@ export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <div className="text-2xl font-black text-slate-900 mb-1">
-                                        {trade.amount} وحدة
+                                        {trade.amount} DZD
                                     </div>
                                     <div className="text-sm text-slate-500 font-medium">
                                         {(trade.listing as any)?.currency || 'N/A'}

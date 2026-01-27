@@ -77,7 +77,7 @@ export const PersonalTicker = () => {
         {
             icon: DollarSign,
             label: 'قيمة العروض النشطة',
-            value: `${data.totalValue.toFixed(2)} وحدة`,
+            value: `${data.totalValue.toFixed(2)} DZD`,
             color: 'emerald',
         },
         {
@@ -89,7 +89,7 @@ export const PersonalTicker = () => {
         {
             icon: TrendingUp,
             label: 'حجم اليوم',
-            value: `${data.todayVolume.toFixed(2)} وحدة`,
+            value: `${data.todayVolume.toFixed(2)} DZD`,
             color: 'purple',
         },
         {
