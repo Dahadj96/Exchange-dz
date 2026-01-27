@@ -7,6 +7,7 @@ export type TradeStatus =
     | 'Paid'
     | 'AwaitingRelease'
     | 'Completed'
+    | 'Cancelled'
     | 'Disputed';
 
 export interface Profile {
@@ -42,6 +43,11 @@ export interface Trade {
     amount_dzd: number;
     status: TradeStatus;
     receipt_url?: string;
+    payment_details?: {
+        method: string;
+        details: string;
+        note?: string;
+    };
     created_at: string;
     updated_at: string;
 }
@@ -51,6 +57,6 @@ export interface Message {
     trade_id: string;
     sender_id: string;
     content: string;
-    image_url?: string;
+    attachment_url?: string;
     created_at: string;
 }

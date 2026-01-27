@@ -1,108 +1,63 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle, Circle, Clock } from 'lucide-react';
-
-interface Step {
-    number: number;
-    title: string;
-    description: string;
-}
+import { motion } from 'framer-motion';
+import { Check, Shield, Wallet, PackageCheck } from 'lucide-react';
 
 interface StatusStepperProps {
     currentStep: number;
 }
 
-const steps: Step[] = [
-    {
-        number: 1,
-        title: 'البدء والاتفاق',
-        description: 'الاتفاق على تفاصيل التحويل',
-    },
-    {
-        number: 2,
-        title: 'رفع الإثبات',
-        description: 'رفع وصل أو لقطة شاشة التحويل',
-    },
-    {
-        number: 3,
-        title: 'التأكيد النهائي',
-        description: 'تأكيد الطرفين وإتمام العملية',
-    },
-];
-
 export const StatusStepper = ({ currentStep }: StatusStepperProps) => {
+    const steps = [
+        { id: 1, name: 'الاتفاق والدفع', icon: Wallet, description: 'تحويل المبلغ' },
+        { id: 2, name: 'تأكيد الدفع', icon: Shield, description: 'رفع الوصل' },
+        { id: 3, name: 'الاستلام', icon: PackageCheck, description: 'تحرير الأصول' },
+    ];
+
     return (
-        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-            <h3 className="text-xl font-black text-slate-900 mb-8">حالة العملية</h3>
+        <div className="py-8 border-b border-slate-100 mb-8 font-cairo">
+            <div className="flex justify-between relative">
+                {/* Connection Line */}
+                <div className="absolute top-6 left-0 w-full h-0.5 bg-slate-100 -z-10" />
+                <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+                    className="absolute top-6 left-0 h-0.5 bg-emerald-500 -z-10 transition-all duration-500"
+                />
 
-            <div className="relative">
-                {/* Progress Line */}
-                <div className="absolute top-6 right-6 left-6 h-1 bg-slate-200 rounded-full" style={{ zIndex: 0 }}>
-                    <div
-                        className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                        style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-                    />
-                </div>
+                {steps.map((step) => {
+                    const isCompleted = currentStep > step.id;
+                    const isActive = currentStep === step.id;
+                    const Icon = step.icon;
 
-                {/* Steps */}
-                <div className="relative flex justify-between" style={{ zIndex: 1 }}>
-                    {steps.map((step, index) => {
-                        const stepNumber = index + 1;
-                        const isCompleted = stepNumber < currentStep;
-                        const isCurrent = stepNumber === currentStep;
-                        const isPending = stepNumber > currentStep;
-
-                        return (
-                            <div key={step.number} className="flex flex-col items-center" style={{ flex: 1 }}>
-                                {/* Step Circle */}
-                                <div className={`
-                                    w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-all duration-300 relative
-                                    ${isCompleted ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : ''}
-                                    ${isCurrent ? 'bg-emerald-100 text-emerald-600 border-4 border-emerald-500 shadow-lg shadow-emerald-500/20' : ''}
-                                    ${isPending ? 'bg-slate-100 text-slate-400 border-2 border-slate-200' : ''}
-                                `}>
-                                    {isCompleted && <CheckCircle className="w-6 h-6" />}
-                                    {isCurrent && <Clock className="w-6 h-6 animate-pulse" />}
-                                    {isPending && <Circle className="w-6 h-6" />}
+                    return (
+                        <div key={step.id} className="flex flex-col items-center gap-3 bg-white/50 px-2">
+                            <motion.div
+                                animate={{
+                                    scale: isActive ? 1.1 : 1,
+                                    backgroundColor: isCompleted ? '#10b981' : isActive ? '#ffffff' : '#f8fafc',
+                                    borderColor: isCompleted || isActive ? '#10b981' : '#e2e8f0',
+                                }}
+                                className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-colors shadow-sm`}
+                            >
+                                {isCompleted ? (
+                                    <Check className="w-6 h-6 text-white" />
+                                ) : (
+                                    <Icon className={`w-6 h-6 ${isActive ? 'text-emerald-600' : 'text-slate-400'}`} />
+                                )}
+                            </motion.div>
+                            <div className="text-center">
+                                <div className={`text-[11px] font-black uppercase tracking-wider mb-0.5 ${isActive ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                    {step.name}
                                 </div>
-
-                                {/* Step Info */}
-                                <div className="text-center max-w-[120px]">
-                                    <div className={`
-                                        text-sm font-black mb-1
-                                        ${isCompleted || isCurrent ? 'text-slate-900' : 'text-slate-400'}
-                                    `}>
-                                        {step.title}
-                                    </div>
-                                    <div className={`
-                                        text-xs font-medium
-                                        ${isCompleted || isCurrent ? 'text-slate-500' : 'text-slate-400'}
-                                    `}>
-                                        {step.description}
-                                    </div>
+                                <div className="text-[10px] text-slate-400 font-bold hidden sm:block">
+                                    {step.description}
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Current Step Indicator */}
-            <div className="mt-8 p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center">
-                        <Clock className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <div className="text-sm font-black text-emerald-900">
-                            {steps[currentStep - 1]?.title}
                         </div>
-                        <div className="text-xs text-emerald-700 font-medium">
-                            {steps[currentStep - 1]?.description}
-                        </div>
-                    </div>
-                </div>
+                    );
+                })}
             </div>
         </div>
     );
