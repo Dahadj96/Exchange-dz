@@ -9,7 +9,6 @@ import { supabase } from '@/lib/supabase/client';
 import { NotificationDropdown } from './hub/NotificationDropdown';
 
 export const GlobalHeader = () => {
-    if (!supabase) return null;
     const router = useRouter();
     const pathname = usePathname();
     const [user, setUser] = useState<any>(null);
@@ -19,7 +18,7 @@ export const GlobalHeader = () => {
 
     useEffect(() => {
         // Check current session
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(({ data: { session } }: any) => {
             setUser(session?.user ?? null);
             if (session?.user) {
                 fetchProfile(session.user.id);
@@ -29,7 +28,7 @@ export const GlobalHeader = () => {
         // Listen for auth changes
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
             setUser(session?.user ?? null);
             if (session?.user) {
                 fetchProfile(session.user.id);
