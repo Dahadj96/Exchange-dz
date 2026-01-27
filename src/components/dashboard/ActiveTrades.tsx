@@ -64,7 +64,7 @@ export const ActiveTrades = () => {
                 .from('trades')
                 .select(`
                     *,
-                    listing:listing_id(currency),
+                    listing:listing_id(currency_code),
                     buyer:buyer_id(full_name),
                     seller:seller_id(full_name)
                 `)
@@ -161,8 +161,8 @@ export const ActiveTrades = () => {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <div className="text-sm font-black text-slate-900">{trade.amount} DZD</div>
-                                        <div className="text-xs text-slate-500 font-medium">{(trade.listing as any)?.currency || 'N/A'}</div>
+                                        <div className="text-sm font-black text-slate-900">{trade.amount} {(trade.listing as any)?.currency || (trade.listing as any)?.currency_code}</div>
+                                        <div className="text-xs text-slate-500 font-medium">{(trade.listing as any)?.currency_code || 'N/A'}</div>
                                     </div>
                                     <div className="text-right">
                                         <div className="text-xs text-slate-400 font-medium">

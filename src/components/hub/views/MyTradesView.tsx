@@ -45,7 +45,7 @@ export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
                 .from('trades')
                 .select(`
           *,
-          listing:listing_id(currency),
+          listing:listing_id(currency_code),
           buyer:buyer_id(full_name),
           seller:seller_id(full_name)
         `)
@@ -197,10 +197,10 @@ export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <div className="text-2xl font-black text-slate-900 mb-1">
-                                        {trade.amount} DZD
+                                        {trade.amount} {(trade.listing as any)?.currency || (trade.listing as any)?.currency_code}
                                     </div>
                                     <div className="text-sm text-slate-500 font-medium">
-                                        {(trade.listing as any)?.currency || 'N/A'}
+                                        {(trade.listing as any)?.currency_code || 'N/A'}
                                     </div>
                                 </div>
                                 <div className="text-right">

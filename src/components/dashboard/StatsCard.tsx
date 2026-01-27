@@ -41,11 +41,11 @@ export const StatsCard = () => {
             // Fetch completed trades for volume
             const { data: trades } = await supabase
                 .from('trades')
-                .select('amount')
+                .select('amount_dzd')
                 .eq('seller_id', user.id)
                 .eq('status', 'Completed');
 
-            const totalVolume = trades?.reduce((sum, trade) => sum + trade.amount, 0) || 0;
+            const totalVolume = trades?.reduce((sum, trade) => sum + (trade.amount_dzd || 0), 0) || 0;
 
             setStats({
                 totalTrades: profile?.total_trades || 0,

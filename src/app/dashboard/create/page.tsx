@@ -98,24 +98,22 @@ export default function CreateListingPage() {
                                         <p className="text-slate-500 font-medium">اختر العملة التي تريد عرضها للبيع في السوق.</p>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {PLATFORMS.map((p) => (
-                                            <button
-                                                key={p.id}
-                                                onClick={() => {
-                                                    setPlatform(p.id);
-                                                    if (p.currencies.length === 1) setCurrency(p.currencies[0]);
-                                                }}
-                                                className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-4 ${platform === p.id
-                                                    ? 'border-emerald-600 bg-emerald-50'
-                                                    : 'border-slate-100 bg-slate-50 hover:border-slate-200'
-                                                    }`}
-                                            >
-                                                <span className={`font-black ${platform === p.id ? 'text-emerald-900' : 'text-slate-600'}`}>
-                                                    {p.label}
-                                                </span>
-                                            </button>
-                                        ))}
+                                    <div className="space-y-4">
+                                        <label className="text-sm font-bold text-slate-700">المنصة</label>
+                                        <select
+                                            value={platform}
+                                            onChange={(e) => {
+                                                const p = PLATFORMS.find(plat => plat.id === e.target.value);
+                                                setPlatform(e.target.value);
+                                                if (p && p.currencies.length === 1) setCurrency(p.currencies[0]);
+                                            }}
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 outline-none focus:border-emerald-500/50 transition-all text-slate-900 font-bold"
+                                        >
+                                            <option value="">اختر المنصة</option>
+                                            {PLATFORMS.map((p) => (
+                                                <option key={p.id} value={p.id}>{p.label}</option>
+                                            ))}
+                                        </select>
                                     </div>
 
                                     {platform && (
@@ -125,8 +123,9 @@ export default function CreateListingPage() {
                                                 {PLATFORMS.find(p => p.id === platform)?.currencies.map(c => (
                                                     <button
                                                         key={c}
+                                                        type="button"
                                                         onClick={() => setCurrency(c)}
-                                                        className={`px-4 py-2 rounded-xl font-bold border-2 ${currency === c ? 'border-emerald-600 bg-emerald-50 text-emerald-700' : 'border-slate-100 text-slate-500'}`}
+                                                        className={`px-4 py-2 rounded-xl font-bold border-2 transition-all ${currency === c ? 'border-emerald-600 bg-emerald-50 text-emerald-700' : 'border-slate-100 text-slate-500'}`}
                                                     >
                                                         {c}
                                                     </button>
@@ -136,6 +135,7 @@ export default function CreateListingPage() {
                                     )}
 
                                     <button
+                                        type="button"
                                         disabled={!currency}
                                         onClick={() => setStep(2)}
                                         className="w-full py-5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-2xl font-black transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 group"
