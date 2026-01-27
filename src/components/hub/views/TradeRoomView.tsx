@@ -13,6 +13,7 @@ interface TradeRoomViewProps {
 }
 
 export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
+    if (!supabase) return null;
     const [trade, setTrade] = useState<any>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');

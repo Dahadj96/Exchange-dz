@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export const Navbar = () => {
+    if (!supabase) return null;
     const router = useRouter();
     const [user, setUser] = useState<any>(null);
 

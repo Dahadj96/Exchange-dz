@@ -27,6 +27,7 @@ const PLATFORMS = [
 ];
 
 export default function CreateListingPage() {
+    if (!supabase) return null;
     const [step, setStep] = useState(1);
     const [platform, setPlatform] = useState('');
     const [currency, setCurrency] = useState('');

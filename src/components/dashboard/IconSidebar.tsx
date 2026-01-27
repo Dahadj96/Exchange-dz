@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export const IconSidebar = () => {
+    if (!supabase) return null;
     const pathname = usePathname();
     const router = useRouter();
 

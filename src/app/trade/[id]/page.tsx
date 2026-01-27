@@ -19,6 +19,7 @@ import { StatusStepper } from '@/components/trade/StatusStepper';
 import Link from 'next/link';
 
 export default function TradeRoomPage() {
+    if (!supabase) return null;
     const params = useParams();
     const tradeId = params.id as string;
     const [currentStep, setCurrentStep] = useState(1); // 1, 2, or 3

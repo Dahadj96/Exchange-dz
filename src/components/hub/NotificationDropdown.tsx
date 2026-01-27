@@ -20,6 +20,7 @@ interface Notification {
 }
 
 export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
+    if (!supabase) return null;
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);

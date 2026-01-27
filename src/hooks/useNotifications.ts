@@ -10,6 +10,7 @@ interface NotificationData {
 }
 
 export const useNotifications = (userId: string | null) => {
+    if (!supabase) return { hasNewMessages: false, hasNewReceipts: false, totalCount: 0, clearNotifications: () => { } };
     const [notifications, setNotifications] = useState<NotificationData>({
         hasNewMessages: false,
         hasNewReceipts: false,

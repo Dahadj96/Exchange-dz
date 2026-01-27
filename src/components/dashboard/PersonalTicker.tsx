@@ -13,6 +13,7 @@ interface TickerData {
 }
 
 export const PersonalTicker = () => {
+    if (!supabase) return null;
     const [data, setData] = useState<TickerData>({
         totalValue: 0,
         activeOffers: 0,

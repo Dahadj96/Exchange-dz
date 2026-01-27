@@ -11,6 +11,7 @@ interface DashboardSettingsProps {
 }
 
 export const DashboardSettings = ({ userId }: DashboardSettingsProps) => {
+    if (!supabase) return null;
     const router = useRouter();
     const [profile, setProfile] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);

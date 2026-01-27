@@ -10,6 +10,7 @@ interface SettingsViewProps {
 }
 
 export const SettingsView = ({ userId }: SettingsViewProps) => {
+    if (!supabase) return null;
     const [profile, setProfile] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);

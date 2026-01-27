@@ -6,6 +6,7 @@ import { Wallet as WalletIcon, CreditCard, Edit2, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 
 export const WalletView = () => {
+    if (!supabase) return null;
     const [baridiMobRIP, setBaridiMobRIP] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [tempRIP, setTempRIP] = useState('');

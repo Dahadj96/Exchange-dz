@@ -8,6 +8,7 @@ import { Listing } from '@/types';
 import { CreateOfferModal } from '@/components/CreateOfferModal';
 
 export const MyOffersView = () => {
+    if (!supabase) return null;
     const [offers, setOffers] = useState<Listing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

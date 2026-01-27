@@ -11,6 +11,7 @@ interface HubContextPanelProps {
 }
 
 export const HubContextPanel = ({ userId }: HubContextPanelProps) => {
+    if (!supabase) return null;
     const [profile, setProfile] = useState<Profile | null>(null);
     const [activeTrades, setActiveTrades] = useState(0);
 

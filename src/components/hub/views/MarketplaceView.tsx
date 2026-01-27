@@ -9,6 +9,7 @@ import { BuyOfferModal } from '@/components/marketplace/BuyOfferModal';
 import { Listing, Profile, PlatformType, SupportedCurrency } from '@/types';
 
 export const MarketplaceView = () => {
+    if (!supabase) return null;
     const [listings, setListings] = useState<Array<{ listing: Listing; seller: Profile }>>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');

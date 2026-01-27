@@ -11,6 +11,7 @@ interface MyTradesViewProps {
 }
 
 export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
+    if (!supabase) return null;
     const [trades, setTrades] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');

@@ -18,6 +18,7 @@ interface Message {
 }
 
 export const RecentMessages = () => {
+    if (!supabase) return null;
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 

@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase/client';
 import { NotificationDropdown } from './hub/NotificationDropdown';
 
 export const GlobalHeader = () => {
+    if (!supabase) return null;
     const router = useRouter();
     const pathname = usePathname();
     const [user, setUser] = useState<any>(null);

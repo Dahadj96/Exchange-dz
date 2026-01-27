@@ -6,6 +6,7 @@ import { Award, TrendingUp, Star } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 
 export const TrustScore = () => {
+    if (!supabase) return null;
     const [score, setScore] = useState(0);
     const [isVerified, setIsVerified] = useState(false);
     const [isLoading, setIsLoading] = useState(true);

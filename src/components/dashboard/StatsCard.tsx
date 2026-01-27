@@ -13,6 +13,7 @@ interface Stats {
 }
 
 export const StatsCard = () => {
+    if (!supabase) return null;
     const [stats, setStats] = useState<Stats>({
         totalTrades: 0,
         successRate: 0,

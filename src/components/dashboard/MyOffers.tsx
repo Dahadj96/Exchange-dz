@@ -15,6 +15,7 @@ interface Offer {
 }
 
 export const MyOffers = () => {
+    if (!supabase) return null;
     const [offers, setOffers] = useState<Offer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);

@@ -74,6 +74,7 @@ const MOCK_LISTINGS: (Listing & { seller: Profile })[] = [
 ];
 
 export default function MarketplacePage() {
+    if (!supabase) return null;
     const [user, setUser] = useState<any>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [selectedOffer, setSelectedOffer] = useState<(Listing & { seller: Profile }) | null>(null);

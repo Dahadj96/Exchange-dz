@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 
 export default function SettingsPage() {
+    if (!supabase) return null;
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
@@ -80,8 +81,8 @@ export default function SettingsPage() {
                                 <button
                                     key={i}
                                     className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl transition-all font-bold text-sm ${item.active
-                                            ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/20'
-                                            : item.danger ? 'text-red-500 hover:bg-red-50' : 'text-slate-500 hover:bg-white'
+                                        ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/20'
+                                        : item.danger ? 'text-red-500 hover:bg-red-50' : 'text-slate-500 hover:bg-white'
                                         }`}
                                 >
                                     <div className="flex items-center gap-4">

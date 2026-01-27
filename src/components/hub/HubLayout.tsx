@@ -17,6 +17,7 @@ interface HubLayoutProps {
 }
 
 export const HubLayout = ({ userId }: HubLayoutProps) => {
+    if (!supabase) return null;
     const {
         activeView,
         selectedTradeId,

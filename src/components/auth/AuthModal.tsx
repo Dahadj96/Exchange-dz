@@ -13,6 +13,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal = ({ isOpen, onClose, defaultView = 'login' }: AuthModalProps) => {
+    if (!supabase) return null;
     const router = useRouter();
     const [view, setView] = useState<'login' | 'signup'>(defaultView);
     const [email, setEmail] = useState('');

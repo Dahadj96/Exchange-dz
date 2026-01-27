@@ -15,6 +15,7 @@ interface BuyOfferModalProps {
 }
 
 export const BuyOfferModal = ({ isOpen, onClose, listing, seller }: BuyOfferModalProps) => {
+    if (!supabase) return null;
     const router = useRouter();
     const [amountAsset, setAmountAsset] = useState('');
     const [isLoading, setIsLoading] = useState(false);

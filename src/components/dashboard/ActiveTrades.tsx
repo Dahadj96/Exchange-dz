@@ -23,6 +23,7 @@ interface Trade {
 }
 
 export const ActiveTrades = () => {
+    if (!supabase) return null;
     const [trades, setTrades] = useState<Trade[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 

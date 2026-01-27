@@ -7,6 +7,7 @@ import { HubLayout } from '@/components/hub/HubLayout';
 import { DashboardSettings } from '@/components/dashboard/DashboardSettings';
 
 function DashboardContent() {
+    if (!supabase) return null;
     const router = useRouter();
     const searchParams = useSearchParams();
     const [userId, setUserId] = useState<string | null>(null);

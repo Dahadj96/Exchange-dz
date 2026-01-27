@@ -11,6 +11,7 @@ interface ReceiptUploaderProps {
 }
 
 export const ReceiptUploader = ({ tradeId, onUploadComplete }: ReceiptUploaderProps) => {
+    if (!supabase) return null;
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(null);
 
