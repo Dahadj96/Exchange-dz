@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Newspaper, Clock, User, ArrowRight, Share2 } from 'lucide-react';
+import Image from 'next/image';
 
 const BlogCard = ({ title, date, author, category, image, desc }: any) => (
     <div className="group bg-white rounded-[40px] border border-slate-200 overflow-hidden hover:shadow-2xl transition-all h-full flex flex-col">
@@ -11,10 +12,11 @@ const BlogCard = ({ title, date, author, category, image, desc }: any) => (
             <div className="absolute top-6 right-6 z-10 px-4 py-1.5 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-emerald-600 shadow-sm">
                 {category}
             </div>
-            <img
+            <Image
                 src={image}
                 alt={title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 relative z-0"
+                fill
+                className="object-cover group-hover:scale-110 transition-transform duration-700 relative z-0"
             />
         </div>
         <div className="p-10 flex-1 flex flex-col">

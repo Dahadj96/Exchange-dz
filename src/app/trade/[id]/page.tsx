@@ -282,7 +282,7 @@ export default function TradeRoomPage() {
                             <ReceiptUploader
                                 tradeId={tradeId}
                                 onUploadComplete={(url) => {
-                                    console.log('Receipt uploaded to:', url);
+                                    // console.log removed
                                 }}
                             />
                             <button

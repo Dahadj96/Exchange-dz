@@ -8,6 +8,8 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { BuyOfferModal } from '@/components/marketplace/BuyOfferModal';
 import { Listing, Profile, PlatformType, SupportedCurrency } from '@/types';
 
+import { MarketplaceSkeleton } from '@/components/marketplace/MarketplaceSkeleton';
+
 export const MarketplaceView = () => {
     if (!supabase) return null;
     const [listings, setListings] = useState<Array<{ listing: Listing; seller: Profile }>>([]);
@@ -122,21 +124,9 @@ export const MarketplaceView = () => {
 
             {/* Listings Grid */}
             {isLoading ? (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="p-8 rounded-3xl bg-white border border-slate-200 animate-pulse">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-14 h-14 bg-slate-200 rounded-2xl" />
-                                <div className="flex-1">
-                                    <div className="w-32 h-4 bg-slate-200 rounded mb-2" />
-                                    <div className="w-24 h-3 bg-slate-200 rounded" />
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="w-full h-20 bg-slate-200 rounded-2xl" />
-                                <div className="w-full h-12 bg-slate-200 rounded-3xl" />
-                            </div>
-                        </div>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-24">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <MarketplaceSkeleton key={i} />
                     ))}
                 </div>
             ) : filteredListings.length === 0 ? (
@@ -191,3 +181,4 @@ export const MarketplaceView = () => {
         </div>
     );
 };
+

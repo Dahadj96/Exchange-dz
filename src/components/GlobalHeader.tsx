@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Settings, LogOut, ChevronDown, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Settings, LogOut, ChevronDown, Menu, X, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { NotificationDropdown } from './hub/NotificationDropdown';
 
@@ -64,6 +64,16 @@ export const GlobalHeader = () => {
     };
 
     const isActive = (path: string) => pathname === path;
+
+    const handleBack = () => {
+        if (pathname.includes('/dashboard/')) {
+            router.push('/dashboard');
+        } else {
+            router.back();
+        }
+    };
+
+    const shouldShowBackButton = pathname !== '/' && (pathname.includes('/marketplace') || pathname.includes('/dashboard'));
 
     const navLinks = [
         { href: '/', label: 'الرئيسية' },
@@ -200,16 +210,26 @@ export const GlobalHeader = () => {
                         ))}
                     </nav>
 
-                    {/* ========== ZONE 3: FAR LEFT (Brand) ========== */}
-                    <Link href="/" className="flex items-center gap-3 group z-20">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                            A
-                        </div>
-                        <div className="hidden sm:block text-right">
-                            <div className="text-xl font-black text-slate-900 leading-none mb-1">AssetBridge</div>
-                            <div className="text-[10px] text-emerald-600 font-black uppercase tracking-[2px]">Marketplace</div>
-                        </div>
-                    </Link>
+                    {/* Logo & Mobile Back Button - Right side (in RTL) / Left side (Visual) */}
+                    <div className="flex items-center gap-3 group z-20">
+                        {shouldShowBackButton && (
+                            <button
+                                onClick={handleBack}
+                                className="lg:hidden p-2 hover:bg-slate-100 rounded-xl transition-colors ml-1"
+                            >
+                                <ChevronRight className="w-6 h-6 text-slate-600" />
+                            </button>
+                        )}
+                        <Link href="/" className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                                A
+                            </div>
+                            <div className="hidden sm:block text-right">
+                                <div className="text-xl font-black text-slate-900 leading-none mb-1">AssetBridge</div>
+                                <div className="text-[10px] text-emerald-600 font-black uppercase tracking-[2px]">Marketplace</div>
+                            </div>
+                        </Link>
+                    </div>
 
                 </div>
 

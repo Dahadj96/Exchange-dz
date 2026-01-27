@@ -87,14 +87,14 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
                 .limit(10);
 
             if (error) {
-                console.log('Notifications table may not exist yet:', error.message);
+                // console.log removed
                 setTableExists(false);
             } else if (data) {
                 setNotifications(data);
                 setTableExists(true);
             }
         } catch (err) {
-            console.log('Error fetching notifications:', err);
+            // console.log removed
             setTableExists(false);
         }
         setIsLoading(false);
@@ -112,7 +112,7 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
                 setUnreadCount(count);
             }
         } catch (err) {
-            console.log('Error fetching unread count:', err);
+            // console.log removed
         }
     };
 

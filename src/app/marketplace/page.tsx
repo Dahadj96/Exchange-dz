@@ -8,6 +8,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { BuyOfferModal } from '@/components/marketplace/BuyOfferModal';
 import { Listing, Profile } from '@/types';
 import { supabase } from '@/lib/supabase/client';
+import { MarketplaceSkeleton } from '@/components/marketplace/MarketplaceSkeleton';
 
 // Mock Data for demonstration
 const MOCK_LISTINGS: (Listing & { seller: Profile })[] = [
@@ -76,6 +77,7 @@ const MOCK_LISTINGS: (Listing & { seller: Profile })[] = [
 export default function MarketplacePage() {
     if (!supabase) return null;
     const [user, setUser] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [selectedOffer, setSelectedOffer] = useState<(Listing & { seller: Profile }) | null>(null);
     const [assetFilter, setAssetFilter] = useState('All');
@@ -94,7 +96,13 @@ export default function MarketplacePage() {
             setUser(session?.user ?? null);
         });
 
-        return () => subscription.unsubscribe();
+        // Simulating data fetch for UI demonstration
+        const timer = setTimeout(() => setIsLoading(false), 1200);
+
+        return () => {
+            subscription.unsubscribe();
+            clearTimeout(timer);
+        };
     }, []);
 
     const filteredListings = MOCK_LISTINGS.filter(item => {
@@ -272,7 +280,11 @@ export default function MarketplacePage() {
 
                     {/* Listings Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredListings.map((item) => (
+                        {isLoading ? (
+                            [1, 2, 3, 4, 5, 6].map((i) => (
+                                <MarketplaceSkeleton key={i} />
+                            ))
+                        ) : filteredListings.map((item) => (
                             <MarketplaceCard
                                 key={item.id}
                                 listing={item}

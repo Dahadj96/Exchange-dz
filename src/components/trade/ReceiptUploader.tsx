@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import { Image as ImageIcon, Loader2, CheckCircle2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -70,7 +71,12 @@ export const ReceiptUploader = ({ tradeId, onUploadComplete }: ReceiptUploaderPr
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="relative rounded-2xl overflow-hidden border border-slate-200 aspect-[4/3] bg-slate-50"
                     >
-                        <img src={preview} alt="Receipt Preview" className="w-full h-full object-contain" />
+                        <Image
+                            src={preview}
+                            alt="Receipt Preview"
+                            fill
+                            className="object-contain"
+                        />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                             <button
                                 onClick={() => setPreview(null)}
