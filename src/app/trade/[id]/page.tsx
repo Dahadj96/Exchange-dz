@@ -125,13 +125,31 @@ export default function TradeRoomPage() {
         if (e) e.preventDefault();
         if (!newMessage.trim() || !user) return;
 
-        const { error } = await supabase.from('messages').insert({
+        const payload = {
             trade_id: tradeId,
             sender_id: user.id,
-            content: newMessage,
-        });
+            content: newMessage.trim(),
+        };
 
-        if (!error) setNewMessage('');
+        console.log('Sending message payload:', payload);
+
+        // Basic UUID validation (regex)
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(payload.trade_id)) {
+            console.error('Invalid trade_id (not a UUID):', payload.trade_id);
+            return;
+        }
+
+        const { data, error, status } = await supabase
+            .from('messages')
+            .insert(payload)
+            .select();
+
+        if (error) {
+            console.error('Error sending message (Supabase 400?):', error);
+        } else if (status === 201) {
+            setNewMessage('');
+        }
     };
 
     const updateTradeStatus = async (status: TradeStatus) => {

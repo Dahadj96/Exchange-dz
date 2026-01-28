@@ -26,7 +26,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
         fetchMessages();
 
         // Get current user
-        supabase.auth.getUser().then(({ data: { user } }) => {
+        supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
             setCurrentUserId(user?.id || null);
         });
 
@@ -41,7 +41,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                     table: 'messages',
                     filter: `trade_id=eq.${tradeId}`,
                 },
-                (payload) => {
+                (payload: any) => {
                     setMessages((prev) => [...prev, payload.new as Message]);
                 }
             )
@@ -89,13 +89,30 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
     const handleSendMessage = async () => {
         if (!newMessage.trim() || !currentUserId) return;
 
-        await supabase.from('messages').insert({
+        const payload = {
             trade_id: tradeId,
             sender_id: currentUserId,
             content: newMessage.trim(),
-        });
+        };
 
-        setNewMessage('');
+        console.log('Sending message hub payload:', payload);
+
+        // UUID validation
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(payload.trade_id)) {
+            console.error('Invalid trade_id in HubView:', payload.trade_id);
+            return;
+        }
+
+        const { error, status } = await supabase
+            .from('messages')
+            .insert(payload);
+
+        if (error) {
+            console.error('Error sending message from HubView:', error);
+        } else if (status === 201) {
+            setNewMessage('');
+        }
     };
 
     const getCurrentStep = () => {

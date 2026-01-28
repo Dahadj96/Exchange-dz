@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { HubLayout } from '@/components/hub/HubLayout';
 import { DashboardSettings } from '@/components/dashboard/DashboardSettings';
+import { ClientOnly } from '@/components/ClientOnly';
 
 function DashboardContent() {
     if (!supabase) return null;
@@ -57,13 +58,15 @@ function DashboardContent() {
 
     // Render the appropriate view based on URL parameter
     return (
-        <>
-            {activeView === 'settings' ? (
-                <DashboardSettings userId={userId} />
-            ) : (
-                <HubLayout userId={userId} />
-            )}
-        </>
+        <ClientOnly>
+            <div suppressHydrationWarning>
+                {activeView === 'settings' ? (
+                    <DashboardSettings userId={userId} />
+                ) : (
+                    <HubLayout userId={userId} />
+                )}
+            </div>
+        </ClientOnly>
     );
 }
 
