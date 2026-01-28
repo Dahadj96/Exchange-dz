@@ -7,10 +7,11 @@ import { supabase } from '@/lib/supabase/client';
 
 interface Offer {
     id: string;
-    currency: string;
+    currency_code: string;
     rate: number;
-    stock: number;
+    available_amount: number;
     min_amount: number;
+    max_amount: number;
     is_active: boolean;
 }
 
@@ -141,7 +142,7 @@ export const MyOffers = () => {
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <div className={`w-2 h-2 rounded-full ${offer.is_active ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                                        <span className="text-sm font-black text-slate-900">{(offer as any).currency_code || (offer as any).currency}</span>
+                                        <span className="text-sm font-black text-slate-900">{offer.currency_code}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <motion.button
@@ -184,7 +185,7 @@ export const MyOffers = () => {
                                     </div>
                                     <div>
                                         <div className="text-slate-500 font-medium mb-1">المخزون</div>
-                                        <div className="font-black text-slate-900">{offer.stock}</div>
+                                        <div className="font-black text-slate-900">{offer.available_amount}</div>
                                     </div>
                                     <div>
                                         <div className="text-slate-500 font-medium mb-1">الحد الأدنى</div>

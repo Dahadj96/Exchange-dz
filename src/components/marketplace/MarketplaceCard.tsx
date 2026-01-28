@@ -77,7 +77,7 @@ export const MarketplaceCard = ({ listing, seller, onActionClick }: MarketplaceC
                 <div className="bg-slate-50 rounded-3xl p-5 flex justify-between items-center border border-slate-200">
                     <div>
                         <span className="text-xs text-slate-500 block mb-1 font-medium">عرض البيع</span>
-                        <span className="text-base text-slate-900 font-black">{listing.stock} {listing.currency_code} على {listing.platform}</span>
+                        <span className="text-base text-slate-900 font-black">{listing.available_amount} {listing.currency_code} على {listing.platform}</span>
                     </div>
                 </div>
 

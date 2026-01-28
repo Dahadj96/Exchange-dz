@@ -14,12 +14,9 @@ interface CreateOfferModalProps {
 }
 
 const PLATFORMS: { id: PlatformType; label: string; currencies: SupportedCurrency[] }[] = [
-    { id: 'Wise', label: 'Wise', currencies: ['EUR', 'USD', 'GBP'] },
+    { id: 'Wise', label: 'Wise', currencies: ['EUR', 'USD'] },
     { id: 'Paysera', label: 'Paysera', currencies: ['EUR'] },
     { id: 'RedotPay', label: 'RedotPay', currencies: ['USD'] },
-    { id: 'USDT', label: 'USDT (Tether)', currencies: ['USD'] },
-    { id: 'Payoneer', label: 'Payoneer', currencies: ['USD', 'EUR', 'GBP'] },
-    { id: 'Skrill', label: 'Skrill', currencies: ['USD', 'EUR'] },
 ];
 
 export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateOfferModalProps) => {
@@ -32,7 +29,7 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateO
     const [formData, setFormData] = useState({
         currency_code: '' as SupportedCurrency | '',
         rate: '',
-        stock: '',
+        available_amount: '',
         min_amount: '',
         max_amount: '',
     });
@@ -66,10 +63,10 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateO
                 user_id: userId,
                 platform: selectedPlatform,
                 currency_code: formData.currency_code,
-                rate: parseFloat(formData.rate),
-                stock: parseFloat(formData.stock),
-                min_amount: parseFloat(formData.min_amount),
-                max_amount: parseFloat(formData.max_amount),
+                rate: Number(formData.rate),
+                available_amount: Number(formData.available_amount) || 0,
+                min_amount: Number(formData.min_amount),
+                max_amount: Number(formData.max_amount),
                 is_active: true,
             });
 
@@ -83,7 +80,7 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateO
             setFormData({
                 currency_code: '',
                 rate: '',
-                stock: '',
+                available_amount: '',
                 min_amount: '',
                 max_amount: '',
             });
@@ -237,8 +234,8 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateO
                                                     type="number"
                                                     required
                                                     step="0.01"
-                                                    value={formData.stock}
-                                                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                                                    value={formData.available_amount}
+                                                    onChange={(e) => setFormData({ ...formData, available_amount: e.target.value })}
                                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
                                                     placeholder="0.00"
                                                 />
@@ -295,7 +292,7 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateO
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-slate-600">إجمالي القيمة (DZD):</span>
                                                 <span className="font-black text-slate-900">
-                                                    {((parseFloat(formData.stock || '0') * parseFloat(formData.rate || '0'))).toLocaleString()} DZD
+                                                    {(Number(formData.available_amount || '0') * Number(formData.rate || '0')).toLocaleString()} DZD
                                                 </span>
                                             </div>
                                         </div>

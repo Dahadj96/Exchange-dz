@@ -27,7 +27,7 @@ export interface Listing {
     platform: PlatformType;
     currency_code: SupportedCurrency;
     rate: number;
-    stock: number;
+    available_amount: number;
     min_amount: number;
     max_amount: number;
     is_active: boolean;

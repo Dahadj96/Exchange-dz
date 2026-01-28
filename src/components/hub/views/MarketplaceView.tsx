@@ -40,7 +40,7 @@ export const MarketplaceView = () => {
                     platform: string;
                     currency_code: string;
                     rate: number;
-                    stock: number;
+                    available_amount: number;
                     min_amount: number;
                     max_amount: number;
                     is_active: boolean;
@@ -55,7 +55,7 @@ export const MarketplaceView = () => {
                         platform: item.platform as PlatformType,
                         currency_code: item.currency_code as SupportedCurrency,
                         rate: item.rate,
-                        stock: item.stock,
+                        available_amount: item.available_amount,
                         min_amount: item.min_amount,
                         max_amount: item.max_amount,
                         is_active: item.is_active,
@@ -124,9 +124,6 @@ export const MarketplaceView = () => {
                         <option value="Wise">Wise</option>
                         <option value="Paysera">Paysera</option>
                         <option value="RedotPay">RedotPay</option>
-                        <option value="USDT">USDT</option>
-                        <option value="Payoneer">Payoneer</option>
-                        <option value="Skrill">Skrill</option>
                     </select>
                 </div>
             </div>
@@ -190,4 +187,3 @@ export const MarketplaceView = () => {
         </div>
     );
 };
-

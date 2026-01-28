@@ -39,12 +39,12 @@ export const PersonalTicker = () => {
             // Fetch active offers
             const { data: offers } = await supabase
                 .from('offers')
-                .select('stock, rate')
+                .select('available_amount, rate')
                 .eq('user_id', user.id)
                 .eq('is_active', true);
 
             // Calculate total value
-            const totalValue = offers?.reduce((sum, offer) => sum + (offer.stock * offer.rate), 0) || 0;
+            const totalValue = offers?.reduce((sum, offer) => sum + (offer.available_amount * offer.rate), 0) || 0;
             const activeOffers = offers?.length || 0;
 
             // Fetch today's trades

@@ -18,7 +18,7 @@ const MOCK_LISTINGS: (Listing & { seller: Profile })[] = [
         platform: 'Wise',
         currency_code: 'EUR',
         rate: 245.5,
-        stock: 500,
+        available_amount: 500,
         min_amount: 50,
         max_amount: 500,
         is_active: true,
@@ -38,7 +38,7 @@ const MOCK_LISTINGS: (Listing & { seller: Profile })[] = [
         platform: 'Paysera',
         currency_code: 'EUR',
         rate: 242.0,
-        stock: 450,
+        available_amount: 450,
         min_amount: 20,
         max_amount: 450,
         is_active: true,
@@ -58,7 +58,7 @@ const MOCK_LISTINGS: (Listing & { seller: Profile })[] = [
         platform: 'RedotPay',
         currency_code: 'USD',
         rate: 235.0,
-        stock: 2100,
+        available_amount: 2100,
         min_amount: 10,
         max_amount: 2100,
         is_active: true,
@@ -110,8 +110,8 @@ export default function MarketplacePage() {
         if (assetFilter !== 'All' && item.platform !== assetFilter) return false;
 
         // Amount range filter
-        if (minAmount && item.min_amount < parseFloat(minAmount)) return false;
-        if (maxAmount && item.max_amount > parseFloat(maxAmount)) return false;
+        if (minAmount && item.min_amount < Number(minAmount)) return false;
+        if (maxAmount && item.max_amount > Number(maxAmount)) return false;
 
         // Reputation filter
         if (item.seller.success_rate < minReputation) return false;
@@ -226,7 +226,7 @@ export default function MarketplacePage() {
 
                     {/* Asset Type Quick Filters */}
                     <div className="flex gap-3 mb-12 overflow-x-auto pb-4 scrollbar-hide">
-                        {['All', 'Wise', 'Paysera', 'RedotPay', 'USDT', 'Payoneer', 'Skrill'].map((cat) => (
+                        {['All', 'Wise', 'Paysera', 'RedotPay'].map((cat) => (
                             <button
                                 key={cat}
                                 onClick={() => setAssetFilter(cat)}

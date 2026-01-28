@@ -127,7 +127,7 @@ export const MyOffersView = () => {
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="p-3 bg-slate-50 rounded-2xl">
                                     <div className="text-xs text-slate-500 mb-1">المتاح للبيع</div>
-                                    <div className="text-lg font-black text-slate-900">{offer.stock} {offer.currency_code}</div>
+                                    <div className="text-lg font-black text-slate-900">{offer.available_amount} {offer.currency_code}</div>
                                 </div>
                                 <div className="p-3 bg-slate-50 rounded-2xl">
                                     <div className="text-xs text-slate-500 mb-1">الحد الأدنى</div>

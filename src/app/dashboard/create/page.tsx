@@ -18,12 +18,9 @@ import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 const PLATFORMS = [
-    { id: 'Wise', label: 'Wise', currencies: ['EUR', 'USD', 'GBP'] },
+    { id: 'Wise', label: 'Wise', currencies: ['EUR', 'USD'] },
     { id: 'Paysera', label: 'Paysera', currencies: ['EUR'] },
     { id: 'RedotPay', label: 'RedotPay', currencies: ['USD'] },
-    { id: 'USDT', label: 'USDT (Tether)', currencies: ['USD'] },
-    { id: 'Payoneer', label: 'Payoneer', currencies: ['USD', 'EUR', 'GBP'] },
-    { id: 'Skrill', label: 'Skrill', currencies: ['USD', 'EUR'] },
 ];
 
 export default function CreateListingPage() {
@@ -31,7 +28,7 @@ export default function CreateListingPage() {
     const [step, setStep] = useState(1);
     const [platform, setPlatform] = useState('');
     const [currency, setCurrency] = useState('');
-    const [amount, setAmount] = useState('');
+    const [amount, setAmount] = useState(''); // available_amount
     const [rate, setRate] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -45,25 +42,25 @@ export default function CreateListingPage() {
             return;
         }
 
-        const numericAmount = parseFloat(amount);
+        const numericAmount = Number(amount) || 0;
         const { error } = await supabase.from('offers').insert({
             user_id: user.id,
             platform: platform,
             currency_code: currency,
-            stock: numericAmount,
+            available_amount: numericAmount,
             min_amount: 0,
             max_amount: numericAmount,
-            rate: parseFloat(rate),
+            rate: Number(rate),
             is_active: true
         });
 
-        if (!error) {
-            setStep(3);
-            setTimeout(() => router.push('/marketplace'), 2000);
-        } else {
-            console.error('Error creating listing:', error);
+        if (error) {
+            console.log('Error creating offer:', error);
             alert('Error creating listing: ' + error.message);
             setLoading(false);
+        } else {
+            setStep(3);
+            setTimeout(() => router.push('/marketplace'), 2000);
         }
     };
 
@@ -106,6 +103,7 @@ export default function CreateListingPage() {
                                                 const p = PLATFORMS.find(plat => plat.id === e.target.value);
                                                 setPlatform(e.target.value);
                                                 if (p && p.currencies.length === 1) setCurrency(p.currencies[0]);
+                                                else setCurrency('');
                                             }}
                                             className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 outline-none focus:border-emerald-500/50 transition-all text-slate-900 font-bold"
                                         >
@@ -191,7 +189,7 @@ export default function CreateListingPage() {
                                         <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-3xl space-y-3">
                                             <div className="flex justify-between items-center text-sm font-bold text-emerald-800">
                                                 <span>ستستقبل إجمالاً:</span>
-                                                <span className="text-xl font-black">{(parseFloat(amount || '0') * parseFloat(rate || '0')).toLocaleString()} DA</span>
+                                                <span className="text-xl font-black">{(Number(amount || '0') * Number(rate || '0')).toLocaleString()} DA</span>
                                             </div>
                                         </div>
                                     </div>

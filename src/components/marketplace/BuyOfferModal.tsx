@@ -22,7 +22,7 @@ export const BuyOfferModal = ({ isOpen, onClose, listing, seller }: BuyOfferModa
     const [error, setError] = useState<string | null>(null);
 
     const totalDzd = (parseFloat(amountAsset || '0') * listing.rate);
-    const isValid = parseFloat(amountAsset) >= listing.min_amount && parseFloat(amountAsset) <= listing.max_amount && parseFloat(amountAsset) <= listing.stock;
+    const isValid = parseFloat(amountAsset) >= listing.min_amount && parseFloat(amountAsset) <= listing.max_amount && parseFloat(amountAsset) <= listing.available_amount;
 
     const handleConfirm = async () => {
         setIsLoading(true);
@@ -115,7 +115,7 @@ export const BuyOfferModal = ({ isOpen, onClose, listing, seller }: BuyOfferModa
                                     </div>
                                     <div className="flex justify-between text-xs font-bold px-2">
                                         <span className="text-slate-400">الحد الأدنى: {listing.min_amount}</span>
-                                        <span className="text-slate-400">المتوفر: {listing.stock}</span>
+                                        <span className="text-slate-400">المتوفر: {listing.available_amount}</span>
                                     </div>
                                 </div>
 
