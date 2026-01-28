@@ -42,15 +42,22 @@ export default function TradeRoomPage() {
                 .from('trades')
                 .select(`
                     *,
-                    listing:offers (*),
-                    seller:profiles!trades_seller_id_fkey (*),
-                    buyer:profiles!trades_buyer_id_fkey (*)
-                `)
+                    offer:offers (*)
+                `) // Fixed: Points to offer join after FK rename
                 .eq('id', tradeId)
                 .single();
 
             if (trade) {
-                setTradeData(trade);
+                // Fetch profiles separately for clarity and to avoid complex naming issues
+                const { data: seller } = await supabase.from('profiles').select('*').eq('id', trade.seller_id).single();
+                const { data: buyer } = await supabase.from('profiles').select('*').eq('id', trade.buyer_id).single();
+
+                setTradeData({
+                    ...trade,
+                    seller,
+                    buyer
+                });
+
                 // Step mapping
                 switch (trade.status) {
                     case 'Pending':
@@ -170,7 +177,7 @@ export default function TradeRoomPage() {
                             }`}>
                             {tradeData.status}
                         </span>
-                        <span className="text-slate-500 text-sm font-medium">عملية {tradeData.listing.platform}</span>
+                        <span className="text-slate-500 text-sm font-medium">عملية {tradeData.offer?.platform}</span>
                     </div>
                 </div>
 
@@ -205,12 +212,12 @@ export default function TradeRoomPage() {
                         </div>
                         <div className="flex justify-between items-end">
                             <span className="text-slate-500 font-bold">ستستلم:</span>
-                            <span className="text-emerald-600 font-black text-2xl tracking-tight">{tradeData.amount_asset} {tradeData.listing.currency_code}</span>
+                            <span className="text-emerald-600 font-black text-2xl tracking-tight">{tradeData.amount_asset} {tradeData.offer?.currency_code}</span>
                         </div>
                         <div className="h-px bg-slate-100" />
                         <div className="flex justify-between text-sm">
                             <span className="text-slate-500 font-semibold">السعر المتفق عليه:</span>
-                            <span className="text-slate-900 font-bold">{tradeData.listing.rate} DZD</span>
+                            <span className="text-slate-900 font-bold">{tradeData.offer?.rate} DZD</span>
                         </div>
                     </div>
                 </div>

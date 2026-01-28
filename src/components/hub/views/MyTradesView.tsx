@@ -44,11 +44,11 @@ export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
             const { data } = await supabase
                 .from('trades')
                 .select(`
-          *,
-          listing:listing_id(currency_code),
-          buyer:buyer_id(full_name),
-          seller:seller_id(full_name)
-        `)
+                  *,
+                  offer:offer_id(currency_code),
+                  buyer:buyer_id(full_name),
+                  seller:seller_id(full_name)
+                `) // Fixed: Points to offer join after FK rename
                 .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
                 .order('created_at', { ascending: false });
 
@@ -197,10 +197,10 @@ export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <div className="text-2xl font-black text-slate-900 mb-1">
-                                        {trade.amount} {(trade.listing as any)?.currency || (trade.listing as any)?.currency_code}
+                                        {trade.amount_asset} {(trade.offer as any)?.currency || (trade.offer as any)?.currency_code}
                                     </div>
                                     <div className="text-sm text-slate-500 font-medium">
-                                        {(trade.listing as any)?.currency_code || 'N/A'}
+                                        {(trade.offer as any)?.currency_code || 'N/A'}
                                     </div>
                                 </div>
                                 <div className="text-right">

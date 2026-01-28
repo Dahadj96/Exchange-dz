@@ -8,11 +8,11 @@ import Link from 'next/link';
 
 interface Trade {
     id: string;
-    amount: number;
+    amount_asset: number;
     status: string;
     created_at: string;
-    listing: {
-        currency: string;
+    offer: {
+        currency_code: string;
     };
     buyer: {
         full_name: string;
@@ -64,7 +64,7 @@ export const ActiveTrades = () => {
                 .from('trades')
                 .select(`
                     *,
-                    listing:listing_id(currency_code),
+                    offer:offer_id(currency_code),
                     buyer:buyer_id(full_name),
                     seller:seller_id(full_name)
                 `)
@@ -161,8 +161,8 @@ export const ActiveTrades = () => {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <div className="text-sm font-black text-slate-900">{trade.amount} {(trade.listing as any)?.currency || (trade.listing as any)?.currency_code}</div>
-                                        <div className="text-xs text-slate-500 font-medium">{(trade.listing as any)?.currency_code || 'N/A'}</div>
+                                        <div className="text-sm font-black text-slate-900">{trade.amount_asset} {trade.offer?.currency_code}</div>
+                                        <div className="text-xs text-slate-500 font-medium">{trade.offer?.currency_code || 'N/A'}</div>
                                     </div>
                                     <div className="text-right">
                                         <div className="text-xs text-slate-400 font-medium">

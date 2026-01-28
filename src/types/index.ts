@@ -36,7 +36,7 @@ export interface Listing {
 
 export interface Trade {
     id: string;
-    listing_id: string;
+    offer_id: string;
     buyer_id: string;
     seller_id: string;
     amount_asset: number;

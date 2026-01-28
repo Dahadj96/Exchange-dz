@@ -21,8 +21,13 @@ export const BuyOfferModal = ({ isOpen, onClose, listing, seller }: BuyOfferModa
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const totalDzd = (parseFloat(amountAsset || '0') * listing.rate);
-    const isValid = parseFloat(amountAsset) >= listing.min_amount && parseFloat(amountAsset) <= listing.max_amount && parseFloat(amountAsset) <= listing.available_amount;
+    const numericAmount = Number(amountAsset || '0');
+    const totalDzd = numericAmount * listing.rate;
+
+    const isValid =
+        numericAmount >= listing.min_amount &&
+        numericAmount <= listing.max_amount &&
+        numericAmount <= listing.available_amount;
 
     const handleConfirm = async () => {
         setIsLoading(true);
@@ -30,31 +35,37 @@ export const BuyOfferModal = ({ isOpen, onClose, listing, seller }: BuyOfferModa
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
+
             if (!user) throw new Error('يجب تسجيل الدخول أولاً');
-
             if (user.id === listing.user_id) throw new Error('لا يمكنك شراء عرضك الخاص');
+            if (!listing.is_active) throw new Error('هذا العرض لم يعد نشطاً');
+            if (numericAmount > listing.available_amount) throw new Error('الكمية المطلوبة غير متوفرة حالياً');
 
+            // Insert into trades table with offer_id (referencing offers table)
             const { data: trade, error: tradeError } = await supabase
                 .from('trades')
                 .insert({
-                    listing_id: listing.id,
+                    offer_id: listing.id, // Fixed: Uses offer_id instead of legacy listing_id
                     buyer_id: user.id,
                     seller_id: listing.user_id,
-                    amount_asset: parseFloat(amountAsset),
+                    amount_asset: numericAmount,
                     amount_dzd: totalDzd,
                     status: 'Pending'
                 })
                 .select()
                 .single();
 
-            if (tradeError) throw tradeError;
+            if (tradeError) {
+                console.error('Supabase Trade Error:', tradeError);
+                throw new Error(`خطأ في إنشاء الطلب: ${tradeError.message}`);
+            }
 
             // Redirect to trade room
             router.push(`/trade/${trade.id}`);
             onClose();
-        } catch (err: unknown) {
+        } catch (err: any) {
             console.error('Error creating trade:', err);
-            setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
+            setError(err.message || 'حدث خطأ غير متوقع');
         } finally {
             setIsLoading(false);
         }

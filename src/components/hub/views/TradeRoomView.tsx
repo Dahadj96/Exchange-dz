@@ -64,11 +64,11 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
         const { data } = await supabase
             .from('trades')
             .select(`
-        *,
-        listing:listing_id(currency, rate),
-        buyer:buyer_id(full_name, avatar_url),
-        seller:seller_id(full_name, avatar_url)
-      `)
+                *,
+                offer:offer_id(currency_code, rate),
+                buyer:buyer_id(full_name, avatar_url),
+                seller:seller_id(full_name, avatar_url)
+            `) // Fixed: Fixed join to use offer_id and currency_code
             .eq('id', tradeId)
             .single();
 
@@ -138,7 +138,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                 </button>
                 <h2 className="text-4xl font-black text-slate-900 mb-2">غرفة التداول</h2>
                 <p className="text-slate-500 font-medium">
-                    تداول {trade?.amount} DZD من {(trade?.listing as any)?.currency}
+                    تداول {trade?.amount_dzd} DZD من {(trade?.offer as any)?.currency_code}
                 </p>
             </div>
 
