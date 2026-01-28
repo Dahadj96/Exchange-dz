@@ -143,7 +143,7 @@ export default function TradeRoomPage() {
         const { data, error, status } = await supabase
             .from('messages')
             .insert(payload)
-            .select();
+            .select('id, trade_id, sender_id, content, created_at');
 
         if (error) {
             console.error('Error sending message (Supabase 400?):', {
@@ -170,7 +170,7 @@ export default function TradeRoomPage() {
                 trade_id: tradeId,
                 sender_id: user.id,
                 content: `🚀 تم تغيير حالة المعاملة إلى: ${status}`,
-            });
+            }).select('id, trade_id, sender_id, content, created_at');
         }
         setIsUpdating(false);
     };

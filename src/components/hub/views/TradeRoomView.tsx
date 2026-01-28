@@ -106,7 +106,8 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
 
         const { error, status } = await supabase
             .from('messages')
-            .insert(payload);
+            .insert(payload)
+            .select('id, trade_id, sender_id, content, created_at');
 
         if (error) {
             console.error('Error sending message from HubView:', {
