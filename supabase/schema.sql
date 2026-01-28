@@ -27,10 +27,11 @@ CREATE TABLE IF NOT EXISTS public.listings (
 -- Create trades table
 CREATE TABLE IF NOT EXISTS public.trades (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  listing_id UUID REFERENCES public.listings(id) NOT NULL,
+  offer_id UUID REFERENCES public.offers(id) NOT NULL,
   buyer_id UUID REFERENCES public.profiles(id) NOT NULL,
   seller_id UUID REFERENCES public.profiles(id) NOT NULL,
-  amount NUMERIC NOT NULL,
+  amount_asset NUMERIC NOT NULL,
+  amount_dzd NUMERIC NOT NULL,
   status TEXT NOT NULL, -- 'Pending', 'AwaitingPayment', 'Paid', 'AwaitingRelease', 'Completed', 'Disputed'
   receipt_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),

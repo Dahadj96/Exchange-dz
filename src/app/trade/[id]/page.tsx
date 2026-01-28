@@ -146,7 +146,12 @@ export default function TradeRoomPage() {
             .select();
 
         if (error) {
-            console.error('Error sending message (Supabase 400?):', error);
+            console.error('Error sending message (Supabase 400?):', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
         } else if (status === 201) {
             setNewMessage('');
         }

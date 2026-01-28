@@ -109,7 +109,12 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
             .insert(payload);
 
         if (error) {
-            console.error('Error sending message from HubView:', error);
+            console.error('Error sending message from HubView:', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
         } else if (status === 201) {
             setNewMessage('');
         }
