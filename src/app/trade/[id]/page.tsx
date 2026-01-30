@@ -1,24 +1,21 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-    Send,
-    Image as ImageIcon,
     AlertTriangle,
     ShieldCheck,
     ChevronLeft,
-    CreditCard
 } from 'lucide-react';
 import { Trade, Message, TradeStatus } from '@/types';
 import { supabase } from '@/utils/supabase/client';
 import { useHasMounted } from '@/hooks/useHasMounted';
-import { usePaymentMethods } from '@/hooks/usePaymentMethods';
 import { ReceiptUploader } from '@/components/trade/ReceiptUploader';
 import { StatusStepper } from '@/components/trade/StatusStepper';
 import { DisputeModal } from '@/components/trade/DisputeModal';
+import { ChatView } from '@/components/trade/ChatView';
 
 export default function TradeRoomPage() {
     const hasMounted = useHasMounted();
@@ -27,15 +24,10 @@ export default function TradeRoomPage() {
     const router = useRouter();
     const tradeId = params.id as string;
     const [currentStep, setCurrentStep] = useState(1);
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [newMessage, setNewMessage] = useState('');
     const [user, setUser] = useState<any>(null);
     const [tradeData, setTradeData] = useState<any>(null);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    const { methods } = usePaymentMethods(user?.id);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -78,31 +70,13 @@ export default function TradeRoomPage() {
                         setCurrentStep(1);
                 }
             }
-
-            const { data: msgs } = await supabase
-                .from('messages')
-                .select('*')
-                .eq('trade_id', tradeId)
-                .order('created_at', { ascending: true });
-
-            if (msgs) setMessages(msgs as Message[]);
         };
 
         fetchUser();
         fetchInitialData();
 
         const channel = supabase
-            .channel(`trade-${tradeId}`)
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'messages',
-                filter: `trade_id=eq.${tradeId}`
-            }, (payload: any) => {
-                if (payload.eventType === 'INSERT') {
-                    setMessages((prev: Message[]) => [...prev, payload.new as Message]);
-                }
-            })
+            .channel(`trade-status-${tradeId}`)
             .on('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
@@ -117,35 +91,6 @@ export default function TradeRoomPage() {
             supabase.removeChannel(channel);
         };
     }, [tradeId]);
-
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight);
-        }
-    }, [messages]);
-
-    const sendMessage = async (e?: React.FormEvent, contentOverride?: string) => {
-        if (e) e.preventDefault();
-        const content = contentOverride || newMessage.trim();
-        if (!content || !user) return;
-
-        const payload = {
-            trade_id: tradeId,
-            sender_id: user.id,
-            content: content,
-        };
-
-        const { error, status } = await supabase
-            .from('messages')
-            .insert(payload)
-            .select('id, trade_id, sender_id, content, created_at');
-
-        if (error) {
-            console.error('Error sending message:', error);
-        } else if (status === 201 && !contentOverride) {
-            setNewMessage('');
-        }
-    };
 
     const handleSendPaymentInfo = () => {
         if (!methods || methods.length === 0) {
