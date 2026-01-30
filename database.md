@@ -1,5 +1,18 @@
 # Supabase Schema Reference (Master)
 
+## Table: profiles
+- id (uuid, primary key)
+- username (text)
+- full_name (text) -- Verified real name
+- phone (text, optional)
+- city (text, optional)
+- avatar_url (text, optional)
+-- is_verified (boolean) -- REMOVED: Missing in DB
+-- success_rate (numeric) -- REMOVED: Missing in DB
+-- total_trades (integer) -- REMOVED: Missing in DB
+- created_at (timestamptz)
+- updated_at (timestamptz)
+
 ## Table: offers
 - id (uuid, primary key)
 - user_id (uuid, references profiles.id) -- linked to auth.users

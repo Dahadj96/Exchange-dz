@@ -1,23 +1,27 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     Send,
     Image as ImageIcon,
     AlertTriangle,
     ShieldCheck,
-    ChevronLeft
+    ChevronLeft,
+    CreditCard
 } from 'lucide-react';
 import { Trade, Message, TradeStatus } from '@/types';
 import { supabase } from '@/utils/supabase/client';
-import { useParams, useRouter } from 'next/navigation';
+import { useHasMounted } from '@/hooks/useHasMounted';
+import { usePaymentMethods } from '@/hooks/usePaymentMethods';
 import { ReceiptUploader } from '@/components/trade/ReceiptUploader';
 import { StatusStepper } from '@/components/trade/StatusStepper';
 import { DisputeModal } from '@/components/trade/DisputeModal';
-import Link from 'next/link';
 
 export default function TradeRoomPage() {
+    const hasMounted = useHasMounted();
     if (!supabase) return null;
     const params = useParams();
     const router = useRouter();
@@ -31,10 +35,15 @@ export default function TradeRoomPage() {
     const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    const { methods } = usePaymentMethods(user?.id);
+
     useEffect(() => {
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
+            if (user) {
+                const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+                setUser({ ...user, profile });
+            }
         };
 
         const fetchInitialData = async () => {
@@ -42,21 +51,15 @@ export default function TradeRoomPage() {
                 .from('trades')
                 .select(`
                     *,
-                    offer:offers (*)
-                `) // Fixed: Points to offer join after FK rename
+                    offer:offer_id(*),
+                    buyer:buyer_id!trades_buyer_id_fkey(username),
+                    seller:seller_id!trades_seller_id_fkey(username)
+                `)
                 .eq('id', tradeId)
                 .single();
 
             if (trade) {
-                // Fetch profiles separately for clarity and to avoid complex naming issues
-                const { data: seller } = await supabase.from('profiles').select('*').eq('id', trade.seller_id).single();
-                const { data: buyer } = await supabase.from('profiles').select('*').eq('id', trade.buyer_id).single();
-
-                setTradeData({
-                    ...trade,
-                    seller,
-                    buyer
-                });
+                setTradeData(trade);
 
                 // Step mapping
                 switch (trade.status) {
@@ -121,39 +124,45 @@ export default function TradeRoomPage() {
         }
     }, [messages]);
 
-    const sendMessage = async (e?: React.FormEvent) => {
+    const sendMessage = async (e?: React.FormEvent, contentOverride?: string) => {
         if (e) e.preventDefault();
-        if (!newMessage.trim() || !user) return;
+        const content = contentOverride || newMessage.trim();
+        if (!content || !user) return;
 
         const payload = {
             trade_id: tradeId,
             sender_id: user.id,
-            content: newMessage.trim(),
+            content: content,
         };
 
-        console.log('Sending message payload:', payload);
-
-        // Basic UUID validation (regex)
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(payload.trade_id)) {
-            console.error('Invalid trade_id (not a UUID):', payload.trade_id);
-            return;
-        }
-
-        const { data, error, status } = await supabase
+        const { error, status } = await supabase
             .from('messages')
             .insert(payload)
             .select('id, trade_id, sender_id, content, created_at');
 
         if (error) {
-            console.error('Error sending message (Supabase 400?):', {
-                message: error.message,
-                details: error.details,
-                hint: error.hint,
-                code: error.code
-            });
-        } else if (status === 201) {
+            console.error('Error sending message:', error);
+        } else if (status === 201 && !contentOverride) {
             setNewMessage('');
+        }
+    };
+
+    const handleSendPaymentInfo = () => {
+        if (!methods || methods.length === 0) {
+            alert('لا توجد طرق دفع محفوظة. يرجى إضافتها من الإعدادات.');
+            return;
+        }
+
+        if (!user?.profile?.full_name) {
+            alert('يرجى إكمال ملفك الشخصي (الاسم الكامل) لإرسال بيانات الدفع.');
+            return;
+        }
+
+        const defaultMethod = methods[0]; // Assuming sorted by default
+        const info = `بيانات الدفع الآمنة:\n${defaultMethod.provider} - ${defaultMethod.account_identifier}\nصاحب الحساب: ${user.profile.full_name} ✅`;
+
+        if (confirm('هل تريد إرسال بيانات الدفع الافتراضية للدردشة؟')) {
+            sendMessage(undefined, info);
         }
     };
 
@@ -177,6 +186,12 @@ export default function TradeRoomPage() {
 
     const isBuyer = user?.id === tradeData?.buyer_id;
     const isSeller = user?.id === tradeData?.seller_id;
+
+    if (!hasMounted) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
+        </div>
+    );
 
     if (!tradeData) return (
         <div className="min-h-screen flex items-center justify-center">
@@ -263,7 +278,7 @@ export default function TradeRoomPage() {
                         </div>
                         <div>
                             <h2 className="text-slate-900 font-black text-xl font-cairo">الدردشة الآمنة</h2>
-                            <p className="text-sm text-slate-500 font-medium tracking-tight">تواصل مع {isBuyer ? 'البائع' : 'المشتري'} بأمان.</p>
+                            <p className="text-sm text-slate-500 font-medium tracking-tight">تواصل مع {isBuyer ? (tradeData.seller?.username || 'البائع') : (tradeData.buyer?.username || 'المشتري')} بأمان.</p>
                         </div>
                     </div>
                 </div>
@@ -327,10 +342,27 @@ export default function TradeRoomPage() {
                         </div>
                     )}
 
-                    <form onSubmit={sendMessage} className="flex items-center gap-4">
-                        <button type="button" className="p-5 bg-slate-50 border border-slate-200 rounded-3xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all">
+                    <form onSubmit={(e) => sendMessage(e)} className="flex items-center gap-4">
+                        <button
+                            type="button"
+                            className="p-5 bg-slate-50 border border-slate-200 rounded-3xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
+                        >
                             <ImageIcon className="w-7 h-7" />
                         </button>
+
+                        {/* Send Payment Info Button */}
+                        <button
+                            type="button"
+                            onClick={handleSendPaymentInfo}
+                            className={`p-5 bg-slate-50 border border-slate-200 rounded-3xl transition-all ${methods.length > 0
+                                ? 'text-emerald-600 bg-emerald-50 border-emerald-100 hover:bg-emerald-100'
+                                : 'text-slate-400 hover:text-slate-600'
+                                }`}
+                            title="إرسال بيانات الدفع"
+                        >
+                            <CreditCard className="w-7 h-7" />
+                        </button>
+
                         <div className="flex-1 relative">
                             <input
                                 type="text"

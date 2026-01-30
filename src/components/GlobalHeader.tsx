@@ -43,14 +43,21 @@ export const GlobalHeader = () => {
     }, []);
 
     const fetchProfile = async (userId: string) => {
-        const { data } = await supabase
+        if (!userId) return;
+
+        const { data, error } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, username, avatar_url')
             .eq('id', userId)
             .single();
 
+        if (error) {
+            console.error("SupabaseDetails:", error.message, error.hint);
+            return;
+        }
+
         if (data) {
-            setProfile(data);
+            setProfile(data as any);
         }
     };
 

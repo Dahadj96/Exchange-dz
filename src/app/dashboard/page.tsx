@@ -5,31 +5,22 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/utils/supabase/client';
 import { HubLayout } from '@/components/hub/HubLayout';
 import { DashboardSettings } from '@/components/dashboard/DashboardSettings';
-import { ClientOnly } from '@/components/ClientOnly';
+import { useHasMounted } from '@/hooks/useHasMounted';
 
 function DashboardContent() {
-    if (!supabase) return null;
+    // 1. Move all hooks to the top (Rules of Hooks)
+    const hasMounted = useHasMounted();
     const router = useRouter();
     const searchParams = useSearchParams();
     const [userId, setUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeView, setActiveView] = useState<'hub' | 'settings'>('hub');
 
-    useEffect(() => {
-        checkAuth();
-    }, []);
-
-    // Monitor URL query parameters for view switching
-    useEffect(() => {
-        const view = searchParams.get('view');
-        if (view === 'settings') {
-            setActiveView('settings');
-        } else {
-            setActiveView('hub');
-        }
-    }, [searchParams]);
-
+    // 2. Define check function
     const checkAuth = async () => {
+        // If supabase client is missing (rare), just return
+        if (!supabase) return;
+
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
@@ -41,6 +32,32 @@ function DashboardContent() {
         setIsLoading(false);
     };
 
+    // 3. Effects
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+    useEffect(() => {
+        const view = searchParams.get('view');
+        if (view === 'settings') {
+            setActiveView('settings');
+        } else {
+            setActiveView('hub');
+        }
+    }, [searchParams]);
+
+    // 4. Hydration Check: Return null or skeleton if not mounted
+    if (!hasMounted) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-slate-600 font-medium">جاري التحميل...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // 5. Loading State
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -52,21 +69,20 @@ function DashboardContent() {
         );
     }
 
-    if (!userId) {
+    // 6. Auth Check
+    if (!userId || !supabase) {
         return null;
     }
 
-    // Render the appropriate view based on URL parameter
+    // 7. Render
     return (
-        <ClientOnly>
-            <div suppressHydrationWarning>
-                {activeView === 'settings' ? (
-                    <DashboardSettings userId={userId} />
-                ) : (
-                    <HubLayout userId={userId} />
-                )}
-            </div>
-        </ClientOnly>
+        <div suppressHydrationWarning>
+            {activeView === 'settings' ? (
+                <DashboardSettings userId={userId} />
+            ) : (
+                <HubLayout userId={userId} />
+            )}
+        </div>
     );
 }
 

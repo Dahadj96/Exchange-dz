@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Shield, CreditCard, Lock, Upload, Check, Camera, Mail, Key, Bell, BellOff } from 'lucide-react';
+import { User, Shield, CreditCard, Lock, Upload, Check, Mail, Bell, BellOff } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
+import { PaymentMethodsSection } from './PaymentMethodsSection';
 
 interface SettingsViewProps {
     userId: string;
@@ -11,79 +12,95 @@ interface SettingsViewProps {
 
 export const SettingsView = ({ userId }: SettingsViewProps) => {
     if (!supabase) return null;
-    const [profile, setProfile] = useState<any>(null);
+
+    // 1. Unified State
+    const [activeTab, setActiveTab] = useState('general');
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    // Form state
-    const [username, setUsername] = useState('');
-    const [baridiMobRIP, setBaridiMobRIP] = useState('');
-    const [wiseEmail, setWiseEmail] = useState('');
-    const [payseraEmail, setPayseraEmail] = useState('');
-    const [redotPayId, setRedotPayId] = useState('');
-    const [verificationStatus, setVerificationStatus] = useState<'pending' | 'verified' | 'none'>('none');
-
-    // Notification preferences
-    const [notifyOnNewMessage, setNotifyOnNewMessage] = useState(true);
-    const [notifyOnTradeStatus, setNotifyOnTradeStatus] = useState(true);
+    const [formData, setFormData] = useState({
+        username: '',
+        full_name: '',
+        phone: '',
+        city: '',
+        verification_status: 'unverified',
+        notify_on_new_message: true,
+        notify_on_trade_status: true
+    });
 
     useEffect(() => {
+        const fetchProfile = async () => {
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (data) {
+                setFormData({
+                    username: data.username || '',
+                    full_name: data.full_name || '',
+                    phone: data.phone || '',
+                    city: data.city || '',
+                    verification_status: data.verification_status || 'unverified',
+                    notify_on_new_message: data.notify_on_new_message ?? true,
+                    notify_on_trade_status: data.notify_on_trade_status ?? true,
+                });
+            }
+            setIsLoading(false);
+        };
+
         fetchProfile();
     }, [userId]);
-
-    const fetchProfile = async () => {
-        const { data } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-        if (data) {
-            setProfile(data);
-            setUsername(data.username || '');
-            setBaridiMobRIP(data.baridimob_rip || '');
-            setWiseEmail(data.wise_email || '');
-            setPayseraEmail(data.paysera_email || '');
-            setRedotPayId(data.redotpay_id || '');
-            setVerificationStatus(data.verification_status || 'none');
-            setNotifyOnNewMessage(data.notify_on_new_message ?? true);
-            setNotifyOnTradeStatus(data.notify_on_trade_status ?? true);
-        }
-        setIsLoading(false);
-    };
 
     const handleSaveSettings = async () => {
         setIsSaving(true);
         setSaveSuccess(false);
 
-        const sanitizedUsername = username?.trim();
+        const sanitizedUsername = formData.username?.trim();
         if (!sanitizedUsername) {
             alert('Username cannot be empty');
             setIsSaving(false);
             return;
         }
 
+        // 4. Logic: Update only valid fields to avoid 400 error
+        const updates = {
+            username: sanitizedUsername,
+            full_name: formData.full_name,
+            phone: formData.phone,
+            city: formData.city,
+            updated_at: new Date().toISOString()
+        };
+
         const { error } = await supabase
             .from('profiles')
-            .update({
-                username: sanitizedUsername,
-                baridimob_rip: baridiMobRIP,
-                wise_email: wiseEmail,
-                paysera_email: payseraEmail,
-                redotpay_id: redotPayId,
-                notify_on_new_message: notifyOnNewMessage,
-                notify_on_trade_status: notifyOnTradeStatus,
-            })
+            .update(updates)
             .eq('id', userId);
 
         if (!error) {
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
+        } else {
+            console.error('Error updating profile:', error.message);
+            alert(`Error updating profile: ${error.message}`);
         }
-
         setIsSaving(false);
     };
+
+    const updateField = (field: string, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    // 3. Tabs Definition
+    const tabs = [
+        { id: 'general', label: 'عام', icon: User },
+        { id: 'verification', label: 'التحقق', icon: Shield },
+        { id: 'payment', label: 'طرق الدفع', icon: CreditCard },
+        { id: 'notifications', label: 'الإشعارات', icon: Bell },
+        { id: 'security', label: 'الأمان', icon: Lock },
+    ];
 
     if (isLoading) {
         return (
@@ -96,295 +113,243 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
         );
     }
 
+    // 1. SyntaxFix: Ensure function properly wraps return
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
             <div className="mb-8">
                 <h2 className="text-4xl font-black text-slate-900 mb-2">إعدادات الحساب</h2>
-                <p className="text-slate-500 font-medium">إدارة معلومات حسابك وبيانات التحويل</p>
+                <p className="text-slate-500 font-medium">إدارة ملفك الشخصي وتفضيلاتك</p>
             </div>
 
-            <div className="space-y-6 pb-8">
-                {/* Identity Verification Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm"
-                >
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
-                            <Shield className="w-6 h-6 text-emerald-600" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900">التحقق من الهوية</h3>
-                            <p className="text-sm text-slate-500 font-medium">رفع وثيقة الهوية للتحقق</p>
-                        </div>
-                    </div>
-
-                    {/* Verification Status */}
-                    <div className={`p-4 rounded-2xl mb-6 ${verificationStatus === 'verified' ? 'bg-emerald-50 border border-emerald-200' :
-                        verificationStatus === 'pending' ? 'bg-amber-50 border border-amber-200' :
-                            'bg-slate-50 border border-slate-200'
-                        }`}>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                {verificationStatus === 'verified' ? (
-                                    <Check className="w-5 h-5 text-emerald-600" />
-                                ) : verificationStatus === 'pending' ? (
-                                    <Upload className="w-5 h-5 text-amber-600" />
-                                ) : (
-                                    <Shield className="w-5 h-5 text-slate-400" />
-                                )}
-                                <div>
-                                    <div className="text-sm font-bold text-slate-900">
-                                        {verificationStatus === 'verified' ? 'تم التحقق من الهوية' :
-                                            verificationStatus === 'pending' ? 'قيد المراجعة' :
-                                                'لم يتم التحقق بعد'}
-                                    </div>
-                                    <div className="text-xs text-slate-500 font-medium">
-                                        {verificationStatus === 'verified' ? 'حسابك موثق بالكامل' :
-                                            verificationStatus === 'pending' ? 'سيتم المراجعة خلال 24 ساعة' :
-                                                'قم برفع صورة بطاقة الهوية أو جواز السفر'}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Upload Button */}
-                    {verificationStatus !== 'verified' && (
-                        <button className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
-                            <Upload className="w-5 h-5" />
-                            رفع وثيقة الهوية
+            {/* Tabs Navigation */}
+            <div className="flex items-center gap-2 mb-8 bg-slate-100 p-1 rounded-2xl w-fit">
+                {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`
+                                flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all
+                                ${isActive
+                                    ? 'bg-white text-emerald-600 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}
+                            `}
+                        >
+                            <Icon className="w-4 h-4" />
+                            {tab.label}
                         </button>
-                    )}
-                </motion.div>
+                    );
+                })}
+            </div>
 
-                {/* Transfer Information Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm"
-                >
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
-                            <CreditCard className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900">معلومات التحويل</h3>
-                            <p className="text-sm text-slate-500 font-medium">احفظ بياناتك لتسهيل عمليات التحويل</p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-5">
-                        {/* BaridiMob RIP */}
-                        <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-2">
-                                رقم RIP - BaridiMob
-                            </label>
-                            <input
-                                type="text"
-                                value={baridiMobRIP}
-                                onChange={(e) => setBaridiMobRIP(e.target.value)}
-                                placeholder="أدخل 20 رقم"
-                                maxLength={20}
-                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            />
-                            <p className="text-xs text-slate-500 mt-2 font-medium">20 رقم فقط</p>
-                        </div>
-
-                        {/* Wise Email */}
-                        <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-slate-600" />
-                                البريد الإلكتروني - Wise
-                            </label>
-                            <input
-                                type="email"
-                                value={wiseEmail}
-                                onChange={(e) => setWiseEmail(e.target.value)}
-                                placeholder="example@email.com"
-                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            />
-                        </div>
-
-                        {/* Paysera Email */}
-                        <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-slate-600" />
-                                البريد الإلكتروني - Paysera
-                            </label>
-                            <input
-                                type="email"
-                                value={payseraEmail}
-                                onChange={(e) => setPayseraEmail(e.target.value)}
-                                placeholder="example@email.com"
-                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            />
-                        </div>
-
-                        {/* RedotPay ID */}
-                        <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <Key className="w-4 h-4 text-slate-600" />
-                                معرّف المستخدم - RedotPay
-                            </label>
-                            <input
-                                type="text"
-                                value={redotPayId}
-                                onChange={(e) => setRedotPayId(e.target.value)}
-                                placeholder="أدخل معرّف RedotPay"
-                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            />
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Notification Preferences Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm"
-                >
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
-                            <Bell className="w-6 h-6 text-amber-600" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900">تفضيلات الإشعارات</h3>
-                            <p className="text-sm text-slate-500 font-medium">إدارة الإشعارات التي تريد استلامها</p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-4">
-                        {/* New Messages Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
-                            <div className="flex items-center gap-3">
-                                {notifyOnNewMessage ? (
-                                    <Bell className="w-5 h-5 text-emerald-600" />
-                                ) : (
-                                    <BellOff className="w-5 h-5 text-slate-400" />
-                                )}
+            <div className="space-y-6 pb-24">
+                {/* General Tab */}
+                {activeTab === 'general' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6"
+                    >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="col-span-1 md:col-span-2 flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
+                                <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-black text-2xl">
+                                    {(formData.username || 'U').charAt(0).toUpperCase()}
+                                </div>
                                 <div>
-                                    <div className="text-sm font-bold text-slate-900">تنبيهات الرسائل الجديدة</div>
-                                    <div className="text-xs text-slate-500 font-medium">احصل على إشعار عند استلام رسالة جديدة</div>
+                                    <div className="font-bold text-slate-900">صورة الملف الشخصي</div>
+                                    <div className="text-sm text-slate-500">تظهر هذه الصورة للمستخدمين الآخرين</div>
                                 </div>
-                            </div>
-                            <button
-                                onClick={() => setNotifyOnNewMessage(!notifyOnNewMessage)}
-                                className={`
-                                    relative w-14 h-7 rounded-full transition-colors
-                                    ${notifyOnNewMessage ? 'bg-emerald-500' : 'bg-slate-300'}
-                                `}
-                            >
-                                <motion.div
-                                    animate={{ x: notifyOnNewMessage ? 28 : 0 }}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                    className="absolute top-0.5 right-0.5 w-6 h-6 bg-white rounded-full shadow-md"
-                                />
-                            </button>
-                        </div>
-
-                        {/* Trade Status Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
-                            <div className="flex items-center gap-3">
-                                {notifyOnTradeStatus ? (
-                                    <Bell className="w-5 h-5 text-emerald-600" />
-                                ) : (
-                                    <BellOff className="w-5 h-5 text-slate-400" />
-                                )}
-                                <div>
-                                    <div className="text-sm font-bold text-slate-900">تنبيهات حالة الصفقة</div>
-                                    <div className="text-xs text-slate-500 font-medium">احصل على إشعار عند تحديث حالة التداول</div>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setNotifyOnTradeStatus(!notifyOnTradeStatus)}
-                                className={`
-                                    relative w-14 h-7 rounded-full transition-colors
-                                    ${notifyOnTradeStatus ? 'bg-emerald-500' : 'bg-slate-300'}
-                                `}
-                            >
-                                <motion.div
-                                    animate={{ x: notifyOnTradeStatus ? 28 : 0 }}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                    className="absolute top-0.5 right-0.5 w-6 h-6 bg-white rounded-full shadow-md"
-                                />
-                            </button>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Profile Management Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm"
-                >
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
-                            <User className="w-6 h-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900">إدارة الملف الشخصي</h3>
-                            <p className="text-sm text-slate-500 font-medium">تحديث معلوماتك الشخصية</p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-5">
-                        {/* Profile Picture */}
-                        <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-3">صورة الملف الشخصي</label>
-                            <div className="flex items-center gap-4">
-                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-3xl shadow-lg">
-                                    {username.charAt(0).toUpperCase() || 'U'}
-                                </div>
-                                <button className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-2xl font-bold transition-all flex items-center gap-2">
-                                    <Camera className="w-4 h-4" />
-                                    تغيير الصورة
+                                <button className="mr-auto px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50">
+                                    تغيير
                                 </button>
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-900 mb-2">الاسم الكامل</label>
+                                <input
+                                    type="text"
+                                    value={formData.full_name}
+                                    onChange={(e) => updateField('full_name', e.target.value)}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    placeholder="الاسم واللقب"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-900 mb-2">اسم المستخدم</label>
+                                <input
+                                    type="text"
+                                    value={formData.username}
+                                    onChange={(e) => updateField('username', e.target.value)}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    placeholder="username"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-900 mb-2">رقم الهاتف</label>
+                                <input
+                                    type="tel"
+                                    value={formData.phone}
+                                    onChange={(e) => updateField('phone', e.target.value)}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    placeholder="05XXXXXXXX"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-900 mb-2">المدينة</label>
+                                <input
+                                    type="text"
+                                    value={formData.city}
+                                    onChange={(e) => updateField('city', e.target.value)}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    placeholder="الجزائر العاصمة"
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Verification Tab */}
+                {activeTab === 'verification' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm"
+                    >
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                                <Shield className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900">حالة التحقق</h3>
+                                <p className="text-slate-500">رفع الوثائق المطلوبة لتأكيد هويتك</p>
+                            </div>
                         </div>
 
-                        {/* Username */}
-                        <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-2">اسم المستخدم</label>
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="أدخل اسم المستخدم"
-                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            />
+                        <div className={`p-6 rounded-2xl flex items-center justify-between mb-6 ${formData.verification_status === 'verified' ? 'bg-emerald-50 border border-emerald-100' : 'bg-slate-50 border border-slate-100'
+                            }`}>
+                            <div className="flex items-center gap-4">
+                                {formData.verification_status === 'verified' ? (
+                                    <Check className="w-6 h-6 text-emerald-600" />
+                                ) : (
+                                    <Shield className="w-6 h-6 text-slate-400" />
+                                )}
+                                <div>
+                                    <div className="font-bold text-slate-900">
+                                        {formData.verification_status === 'verified' ? 'تم التحقق' : 'لم يتم التحقق'}
+                                    </div>
+                                    <div className="text-sm text-slate-500">
+                                        {formData.verification_status === 'verified' ? 'حسابك جاهز للتداول' : 'يرجى رفع صورة بطاقة التعريف'}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Change Password Button */}
-                        <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-2">كلمة المرور</label>
-                            <button className="w-full px-5 py-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-slate-900 font-bold transition-all flex items-center justify-between">
-                                <span>تغيير كلمة المرور</span>
-                                <Lock className="w-5 h-5 text-slate-600" />
+                        <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer">
+                            <Upload className="w-10 h-10 text-slate-400 mb-4" />
+                            <div className="font-bold text-slate-900 mb-1">اضغط لرفع الوثيقة</div>
+                            <div className="text-sm text-slate-500">PNG, JPG حتى 5MB</div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* 5. Payment Methods Tab */}
+                {activeTab === 'payment' && (
+                    <PaymentMethodsSection userId={userId} userFullName={formData.full_name} />
+                )}
+
+                {/* Notifications Tab */}
+                {activeTab === 'notifications' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-4"
+                    >
+                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white rounded-xl shadow-sm">
+                                    <Mail className="w-5 h-5 text-slate-700" />
+                                </div>
+                                <div>
+                                    <div className="font-bold text-slate-900">تنبيهات البريد الإلكتروني</div>
+                                    <div className="text-sm text-slate-500">استلام إشعارات عند وجود رسائل جديدة</div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => updateField('notify_on_new_message', !formData.notify_on_new_message)}
+                                className={`w-14 h-8 rounded-full transition-colors relative ${formData.notify_on_new_message ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                            >
+                                <motion.div
+                                    animate={{ x: formData.notify_on_new_message ? 26 : 2 }}
+                                    className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-sm"
+                                />
                             </button>
                         </div>
-                    </div>
-                </motion.div>
+                        {/* Other notifications will be added in future updates to keep code clean */}
+                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white rounded-xl shadow-sm">
+                                    <Bell className="w-5 h-5 text-slate-700" />
+                                </div>
+                                <div>
+                                    <div className="font-bold text-slate-900">تحديثات الصفقات</div>
+                                    <div className="text-sm text-slate-500">إشعار عند تغيير حالة الصفقة</div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => updateField('notify_on_trade_status', !formData.notify_on_trade_status)}
+                                className={`w-14 h-8 rounded-full transition-colors relative ${formData.notify_on_trade_status ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                            >
+                                <motion.div
+                                    animate={{ x: formData.notify_on_trade_status ? 26 : 2 }}
+                                    className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-sm"
+                                />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
 
-                {/* Save Button */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="sticky bottom-0 bg-slate-50 pt-4 pb-4"
-                >
+                {/* Security Tab */}
+                {activeTab === 'security' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6"
+                    >
+                        <h3 className="font-black text-xl text-slate-900 mb-4">تغيير كلمة المرور</h3>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-900 mb-2">كلمة المرور الحالية</label>
+                            <input type="password" placeholder="••••••••" className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-900 mb-2">كلمة المرور الجديدة</label>
+                            <input type="password" placeholder="••••••••" className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl" />
+                        </div>
+                        <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold">
+                            تحديث كلمة المرور
+                        </button>
+                    </motion.div>
+                )}
+            </div>
+
+            {/* Save Button */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="sticky bottom-0 bg-slate-50 pt-4 pb-4 border-t border-slate-200 mt-auto"
+            >
+                <div className="container mx-auto">
                     <button
                         onClick={handleSaveSettings}
                         disabled={isSaving}
-                        className={`w-full py-5 rounded-2xl font-black text-lg transition-all shadow-lg flex items-center justify-center gap-3 ${saveSuccess
+                        className={`w-full py-4 rounded-xl font-black text-lg transition-all shadow-lg flex items-center justify-center gap-3 ${saveSuccess
                             ? 'bg-emerald-600 text-white'
-                            : 'bg-slate-900 hover:bg-slate-800 text-white'
+                            : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                             }`}
                     >
                         {isSaving ? (
@@ -401,8 +366,8 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
                             'حفظ التغييرات'
                         )}
                     </button>
-                </motion.div>
-            </div>
+                </div>
+            </motion.div>
         </div>
     );
 };

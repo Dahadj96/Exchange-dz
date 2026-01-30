@@ -2,7 +2,9 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
   username TEXT,
+  full_name TEXT,
   phone TEXT,
+  city TEXT,
   avatar_url TEXT,
   is_verified BOOLEAN DEFAULT FALSE,
   success_rate NUMERIC DEFAULT 100,

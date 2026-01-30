@@ -13,7 +13,9 @@ export type TradeStatus =
 export interface Profile {
     id: string;
     username: string;
+    full_name: string;
     phone?: string;
+    city?: string;
     avatar_url?: string;
     is_verified: boolean;
     success_rate: number;
@@ -30,7 +32,6 @@ export interface Offer {
     available_amount: number;
     min_amount: number;
     max_amount: number;
-    is_active: boolean;
     created_at: string;
 }
 

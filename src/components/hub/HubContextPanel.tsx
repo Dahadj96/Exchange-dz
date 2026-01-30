@@ -16,19 +16,49 @@ export const HubContextPanel = ({ userId }: HubContextPanelProps) => {
     const [activeTrades, setActiveTrades] = useState(0);
 
     useEffect(() => {
-        fetchProfile();
-        fetchActiveTrades();
+        let channel: any;
+
+        const initializeData = async () => {
+            await Promise.all([fetchProfile(), fetchActiveTrades()]);
+
+            // Real-time subscription
+            channel = supabase
+                .channel(`hub-context-${userId}`)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'trades',
+                }, () => {
+                    fetchActiveTrades();
+                })
+                .subscribe();
+        };
+
+        initializeData();
+
+        return () => {
+            if (channel) {
+                supabase.removeChannel(channel);
+            }
+        };
     }, [userId]);
 
     const fetchProfile = async () => {
-        const { data } = await supabase
+        if (!userId) return; // Null check
+
+        const { data, error } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, username, is_verified, success_rate, total_trades, created_at, avatar_url')
             .eq('id', userId)
             .single();
 
+        if (error) {
+            console.error("SupabaseDetails:", error.message, error.hint);
+            return;
+        }
+
         if (data) {
-            setProfile(data);
+            setProfile(data as any);
         }
     };
 
@@ -64,7 +94,7 @@ export const HubContextPanel = ({ userId }: HubContextPanelProps) => {
                     {/* Avatar */}
                     <div className="relative inline-block mb-4">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-emerald-600/20">
-                            {profile.username.charAt(0).toUpperCase()}
+                            {profile?.username?.charAt(0).toUpperCase() || "U"}
                         </div>
                         {profile.is_verified && (
                             <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg">

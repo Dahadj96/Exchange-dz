@@ -27,26 +27,18 @@ export const MarketplaceView = () => {
 
     const fetchOffers = async () => {
         try {
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('offers')
-                .select('*')
+                .select(`
+                    *,
+                    seller:profiles!user_id(id, username, full_name, city, created_at)
+                `)
                 .order('created_at', { ascending: false });
 
-            if (data) {
-                const typedData = data as Array<{
-                    id: string;
-                    user_id: string;
-                    platform: string;
-                    currency_code: string;
-                    rate: number;
-                    available_amount: number;
-                    min_amount: number;
-                    max_amount: number;
-                    created_at: string;
-                    profiles: Profile;
-                }>;
+            if (error) throw error;
 
-                const formatted = typedData.map((item) => ({
+            if (data) {
+                const formatted = (data as any).map((item: any) => ({
                     offer: {
                         id: item.id,
                         user_id: item.user_id,
@@ -57,23 +49,24 @@ export const MarketplaceView = () => {
                         min_amount: item.min_amount,
                         max_amount: item.max_amount,
                         created_at: item.created_at,
-                        is_active: true, // Default to true as we only fetch active offers usually, or add to select
                     },
                     seller: {
-                        id: item.user_id,
-                        username: 'بائع', // Default if profile joining fails
-                        is_verified: true,
-                        success_rate: 98,
-                        total_trades: 45,
-                        created_at: item.created_at
+                        id: item.seller.id,
+                        username: item.seller.username || 'مستخدم',
+                        full_name: item.seller.full_name || 'بائع موثق',
+                        city: item.seller.city,
+                        is_verified: false, // Default since column missing
+                        success_rate: 100,  // Default since column missing
+                        total_trades: 0,    // Default since column missing
+                        created_at: item.seller.created_at
                     },
                 }));
                 const typedOffers: Array<{ offer: Offer; seller: Profile }> = formatted;
                 setOffers(typedOffers);
             }
             setIsLoading(false);
-        } catch (error) {
-            console.error('Error fetching offers:', error);
+        } catch (error: any) {
+            console.error('Error fetching offers:', error.message, error.details, error.hint);
             setIsLoading(false);
         }
     };

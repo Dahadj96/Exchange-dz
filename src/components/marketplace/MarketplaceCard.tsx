@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BadgeCheck, ArrowUpRight, Award, TrendingUp, Wallet } from 'lucide-react';
+import { BadgeCheck, ArrowUpRight, Award, TrendingUp, Wallet, MapPin } from 'lucide-react';
 import { Offer, Profile } from '@/types';
 import Link from 'next/link';
 
@@ -33,11 +33,20 @@ export const MarketplaceCard = ({ offer, seller, onActionClick }: MarketplaceCar
                     </div>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="text-slate-900 font-black text-lg">{seller.username}</span>
+                            <span className="text-slate-900 font-black text-lg">{seller.full_name || seller.username}</span>
                             {seller.is_verified && <BadgeCheck className="w-5 h-5 text-emerald-500" />}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
                             <span>{seller.total_trades} معاملة</span>
+                            {seller.city && (
+                                <>
+                                    <span className="text-slate-300">•</span>
+                                    <div className="flex items-center gap-1 text-slate-500">
+                                        <MapPin className="w-3 h-3" />
+                                        <span>{seller.city}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -112,7 +112,6 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, offerToEdit }: Cr
                     available_amount: Number(formData.available_amount) || 0,
                     min_amount: Number(formData.min_amount) || 0,
                     max_amount: Number(formData.max_amount) || 0,
-                    is_active: true,
                 });
 
                 if (submitError) throw submitError;
