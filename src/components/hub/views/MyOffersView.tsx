@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Package, Wallet } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, Wallet } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 import { Offer } from '@/types';
 import { CreateOfferModal } from '@/components/CreateOfferModal';
@@ -34,17 +34,6 @@ export const MyOffersView = () => {
         setIsLoading(false);
     };
 
-    const toggleOfferStatus = async (offerId: string, currentStatus: boolean) => {
-        // Optimistic update
-        setOffers(prev => prev.map(o => o.id === offerId ? { ...o, is_active: !currentStatus } : o));
-
-        await supabase
-            .from('offers')
-            .update({ is_active: !currentStatus })
-            .eq('id', offerId);
-
-        // fetchOffers(); // No need to refetch if optimistic is correct, but safer to leave out for now
-    };
 
     return (
         <div className="h-full flex flex-col">
@@ -105,17 +94,6 @@ export const MyOffersView = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => toggleOfferStatus(offer.id, offer.is_active)}
-                                        className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-                                        title={offer.is_active ? 'إيقاف العرض' : 'تفعيل العرض'}
-                                    >
-                                        {offer.is_active ? (
-                                            <ToggleRight className="w-8 h-8 text-emerald-600" />
-                                        ) : (
-                                            <ToggleLeft className="w-8 h-8 text-slate-400" />
-                                        )}
-                                    </button>
                                     <button className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
                                         <Edit className="w-5 h-5 text-slate-600" />
                                     </button>
@@ -151,7 +129,6 @@ export const MyOffersView = () => {
                         fetchOffers();
                         // Ideally show a toast here
                     }}
-                    userId={userId}
                 />
             )}
         </div>

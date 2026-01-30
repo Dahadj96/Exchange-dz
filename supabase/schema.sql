@@ -14,14 +14,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- Create offers table (Replaces listings)
 CREATE TABLE IF NOT EXISTS public.offers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES public.profiles(id) NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) NOT NULL DEFAULT auth.uid(),
   platform TEXT NOT NULL,
   currency_code TEXT NOT NULL,
   rate NUMERIC NOT NULL,
   available_amount NUMERIC NOT NULL,
   min_amount NUMERIC NOT NULL,
   max_amount NUMERIC NOT NULL,
-  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -77,10 +76,10 @@ CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR 
 CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
--- Listings: Public read, User create/update own
-CREATE POLICY "Listings are viewable by everyone" ON public.listings FOR SELECT USING (true);
-CREATE POLICY "Users can insert their own listings" ON public.listings FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own listings" ON public.listings FOR UPDATE USING (auth.uid() = user_id);
+-- Offers: Public read, User create/update own
+CREATE POLICY "Offers are viewable by everyone" ON public.offers FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own offers" ON public.offers FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own offers" ON public.offers FOR UPDATE USING (auth.uid() = user_id);
 
 -- Trades: Participants read, Participants create/update
 CREATE POLICY "Users can view their own trades" ON public.trades FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = seller_id);

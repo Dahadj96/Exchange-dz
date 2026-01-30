@@ -30,7 +30,6 @@ export interface Offer {
     available_amount: number;
     min_amount: number;
     max_amount: number;
-    is_active: boolean;
     created_at: string;
 }
 

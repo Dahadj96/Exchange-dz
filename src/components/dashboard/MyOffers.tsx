@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Package, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 
 interface Offer {
@@ -12,7 +12,6 @@ interface Offer {
     available_amount: number;
     min_amount: number;
     max_amount: number;
-    is_active: boolean;
 }
 
 export const MyOffers = () => {
@@ -45,25 +44,6 @@ export const MyOffers = () => {
         }
     };
 
-    const toggleOfferStatus = async (offerId: string, currentStatus: boolean) => {
-        // Optimistic update
-        setOffers(offers.map(o =>
-            o.id === offerId ? { ...o, is_active: !currentStatus } : o
-        ));
-
-        const { error } = await supabase
-            .from('offers')
-            .update({ is_active: !currentStatus })
-            .eq('id', offerId);
-
-        if (error) {
-            // Revert on error
-            setOffers(offers.map(o =>
-                o.id === offerId ? { ...o, is_active: currentStatus } : o
-            ));
-            console.error('Error toggling offer:', error);
-        }
-    };
 
     const deleteOffer = async (offerId: string) => {
         if (!confirm('هل أنت متأكد من حذف هذا العرض؟')) return;
@@ -141,23 +121,10 @@ export const MyOffers = () => {
                             >
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${offer.is_active ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                                        <Package className="w-4 h-4 text-emerald-600" />
                                         <span className="text-sm font-black text-slate-900">{offer.currency_code}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <motion.button
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={() => toggleOfferStatus(offer.id, offer.is_active)}
-                                            className="p-2 hover:bg-slate-200 rounded-xl transition-colors"
-                                            title={offer.is_active ? 'إيقاف' : 'تفعيل'}
-                                        >
-                                            {offer.is_active ? (
-                                                <Eye className="w-4 h-4 text-emerald-600" />
-                                            ) : (
-                                                <EyeOff className="w-4 h-4 text-slate-400" />
-                                            )}
-                                        </motion.button>
                                         <motion.button
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}

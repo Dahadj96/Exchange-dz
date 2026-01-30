@@ -10,7 +10,6 @@ interface CreateOfferModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
-    userId: string;
 }
 
 const PLATFORMS: { id: PlatformType; label: string; currencies: SupportedCurrency[] }[] = [
@@ -19,7 +18,7 @@ const PLATFORMS: { id: PlatformType; label: string; currencies: SupportedCurrenc
     { id: 'RedotPay', label: 'RedotPay', currencies: ['USD'] },
 ];
 
-export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateOfferModalProps) => {
+export const CreateOfferModal = ({ isOpen, onClose, onSuccess }: CreateOfferModalProps) => {
     const [step, setStep] = useState<1 | 2>(1);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -60,14 +59,12 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess, userId }: CreateO
 
         try {
             const { error: submitError } = await supabase.from('offers').insert({
-                user_id: userId,
                 platform: selectedPlatform,
                 currency_code: formData.currency_code,
-                rate: Number(formData.rate),
+                rate: Number(formData.rate) || 0,
                 available_amount: Number(formData.available_amount) || 0,
-                min_amount: Number(formData.min_amount),
-                max_amount: Number(formData.max_amount),
-                is_active: true,
+                min_amount: Number(formData.min_amount) || 0,
+                max_amount: Number(formData.max_amount) || 0,
             });
 
             if (submitError) throw submitError;

@@ -21,7 +21,6 @@ const MOCK_OFFERS: (Offer & { seller: Profile })[] = [
         available_amount: 500,
         min_amount: 50,
         max_amount: 500,
-        is_active: true,
         created_at: new Date().toISOString(),
         seller: {
             id: 'u1',
@@ -41,7 +40,6 @@ const MOCK_OFFERS: (Offer & { seller: Profile })[] = [
         available_amount: 450,
         min_amount: 20,
         max_amount: 450,
-        is_active: true,
         created_at: new Date().toISOString(),
         seller: {
             id: 'u2',
@@ -61,7 +59,6 @@ const MOCK_OFFERS: (Offer & { seller: Profile })[] = [
         available_amount: 2100,
         min_amount: 10,
         max_amount: 2100,
-        is_active: true,
         created_at: new Date().toISOString(),
         seller: {
             id: 'u3',
@@ -88,11 +85,11 @@ export default function MarketplacePage() {
     const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
-        supabase.auth.getUser().then(({ data: { user } }) => {
+        supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
             setUser(user);
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
             setUser(session?.user ?? null);
         });
 
@@ -255,7 +252,7 @@ export default function MarketplacePage() {
                                 <span className="text-sm font-bold text-slate-500">متوسط السمعة</span>
                             </div>
                             <div className="text-3xl font-black text-slate-900">
-                                {Math.round(filteredOffers.reduce((acc, item) => acc + item.seller.success_rate, 0) / filteredOffers.length || 0)}%
+                                {Math.round(filteredOffers.reduce((acc: number, item: any) => acc + item.seller.success_rate, 0) / filteredOffers.length || 0)}%
                             </div>
                         </div>
                         <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200">

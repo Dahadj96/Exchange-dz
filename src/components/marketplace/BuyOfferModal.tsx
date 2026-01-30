@@ -38,7 +38,6 @@ export const BuyOfferModal = ({ isOpen, onClose, offer, seller }: BuyOfferModalP
 
             if (!user) throw new Error('يجب تسجيل الدخول أولاً');
             if (user.id === offer.user_id) throw new Error('لا يمكنك شراء عرضك الخاص');
-            if (!offer.is_active) throw new Error('هذا العرض لم يعد نشطاً');
             if (numericAmount > offer.available_amount) throw new Error('الكمية المطلوبة غير متوفرة حالياً');
 
             // Insert into trades table with offer_id (referencing offers table)

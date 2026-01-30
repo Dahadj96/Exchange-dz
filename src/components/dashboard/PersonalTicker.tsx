@@ -40,11 +40,10 @@ export const PersonalTicker = () => {
             const { data: offers } = await supabase
                 .from('offers')
                 .select('available_amount, rate')
-                .eq('user_id', user.id)
-                .eq('is_active', true);
+                .eq('user_id', user.id);
 
             // Calculate total value
-            const totalValue = offers?.reduce((sum, offer) => sum + (offer.available_amount * offer.rate), 0) || 0;
+            const totalValue = offers?.reduce((sum: number, offer: any) => sum + (offer.available_amount * offer.rate), 0) || 0;
             const activeOffers = offers?.length || 0;
 
             // Fetch today's trades
@@ -58,7 +57,7 @@ export const PersonalTicker = () => {
                 .eq('status', 'Completed')
                 .gte('created_at', today.toISOString());
 
-            const todayVolume = trades?.reduce((sum, trade) => sum + (Number((trade as any).amount_dzd) || 0), 0) || 0;
+            const todayVolume = trades?.reduce((sum: number, trade: any) => sum + (Number((trade as any).amount_dzd) || 0), 0) || 0;
 
             setData({
                 totalValue,

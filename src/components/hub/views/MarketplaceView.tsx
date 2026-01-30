@@ -30,7 +30,6 @@ export const MarketplaceView = () => {
             const { data } = await supabase
                 .from('offers')
                 .select('*')
-                .eq('is_active', true)
                 .order('created_at', { ascending: false });
 
             if (data) {
@@ -43,7 +42,6 @@ export const MarketplaceView = () => {
                     available_amount: number;
                     min_amount: number;
                     max_amount: number;
-                    is_active: boolean;
                     created_at: string;
                     profiles: Profile;
                 }>;
@@ -58,7 +56,6 @@ export const MarketplaceView = () => {
                         available_amount: item.available_amount,
                         min_amount: item.min_amount,
                         max_amount: item.max_amount,
-                        is_active: item.is_active,
                         created_at: item.created_at,
                     },
                     seller: {
