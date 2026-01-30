@@ -19,15 +19,20 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
+    // 2. Add avatar_url to state
     const [formData, setFormData] = useState({
         username: '',
         full_name: '',
         phone: '',
         city: '',
+        avatar_url: '',
         verification_status: 'unverified',
         notify_on_new_message: true,
         notify_on_trade_status: true
     });
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -43,6 +48,7 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
                     full_name: data.full_name || '',
                     phone: data.phone || '',
                     city: data.city || '',
+                    avatar_url: data.avatar_url || '',
                     verification_status: data.verification_status || 'unverified',
                     notify_on_new_message: data.notify_on_new_message ?? true,
                     notify_on_trade_status: data.notify_on_trade_status ?? true,
@@ -53,6 +59,48 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
 
         fetchProfile();
     }, [userId]);
+
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            setIsUploading(true);
+            if (!event.target.files || event.target.files.length === 0) {
+                return;
+            }
+            const file = event.target.files[0];
+            const fileExt = file.name.split('.').pop();
+            const filePath = `public/${userId}-${Date.now()}.${fileExt}`;
+
+            // 1. Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            // 3. Update Profile Logic
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+                .eq('id', userId);
+
+            if (updateError) throw updateError;
+
+            // 4. Update Local State
+            setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+            alert('تم تحديث الصورة بنجاح!');
+
+        } catch (error: any) {
+            console.error('Error uploading image:', error);
+            alert('حدث خطأ أثناء رفع الصورة: ' + error.message);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleSaveSettings = async () => {
         setIsSaving(true);
@@ -71,6 +119,7 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
             full_name: formData.full_name,
             phone: formData.phone,
             city: formData.city,
+            // avatar_url is updated separately via handleImageUpload
             updated_at: new Date().toISOString()
         };
 
@@ -155,15 +204,36 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="col-span-1 md:col-span-2 flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-black text-2xl">
-                                    {(formData.username || 'U').charAt(0).toUpperCase()}
+                                <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-black text-2xl overflow-hidden relative">
+                                    {formData.avatar_url ? (
+                                        <img
+                                            src={formData.avatar_url}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        (formData.username || 'U').charAt(0).toUpperCase()
+                                    )}
                                 </div>
                                 <div>
                                     <div className="font-bold text-slate-900">صورة الملف الشخصي</div>
                                     <div className="text-sm text-slate-500">تظهر هذه الصورة للمستخدمين الآخرين</div>
                                 </div>
-                                <button className="mr-auto px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50">
-                                    تغيير
+
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                    accept="image/*"
+                                />
+
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    className="mr-auto px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                                >
+                                    {isUploading ? 'جاري الرفع...' : 'تغيير'}
                                 </button>
                             </div>
 
