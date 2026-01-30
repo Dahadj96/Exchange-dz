@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Globe, LayoutDashboard, LogOut } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export const Navbar = () => {

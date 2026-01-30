@@ -15,7 +15,7 @@ import {
     ChevronLeft
 } from 'lucide-react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 export default function SettingsPage() {
     if (!supabase) return null;

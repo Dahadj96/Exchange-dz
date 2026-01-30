@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Wallet, Banknote, AlertCircle, ArrowLeft, ArrowUpRight } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { Offer, Profile } from '@/types';
 import { useRouter } from 'next/navigation';
 

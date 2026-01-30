@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Package, Wallet } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { Offer } from '@/types';
 import { CreateOfferModal } from '@/components/CreateOfferModal';
 

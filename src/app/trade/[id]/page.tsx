@@ -7,12 +7,10 @@ import {
     Image as ImageIcon,
     AlertTriangle,
     ShieldCheck,
-    Info,
-    ChevronLeft,
-    Clock
+    ChevronLeft
 } from 'lucide-react';
 import { Trade, Message, TradeStatus } from '@/types';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
 import { ReceiptUploader } from '@/components/trade/ReceiptUploader';
 import { StatusStepper } from '@/components/trade/StatusStepper';

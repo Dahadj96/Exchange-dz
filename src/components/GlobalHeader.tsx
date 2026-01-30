@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Settings, LogOut, ChevronDown, Menu, X, ChevronRight } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { NotificationDropdown } from './hub/NotificationDropdown';
 
 export const GlobalHeader = () => {

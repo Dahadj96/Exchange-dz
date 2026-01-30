@@ -7,7 +7,7 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { BuyOfferModal } from '@/components/marketplace/BuyOfferModal';
 import { Offer, Profile } from '@/types';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { MarketplaceSkeleton } from '@/components/marketplace/MarketplaceSkeleton';
 
 // Mock Data for demonstration

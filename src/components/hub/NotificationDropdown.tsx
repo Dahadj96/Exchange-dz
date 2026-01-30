@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X, MessageSquare, TrendingUp, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 interface NotificationDropdownProps {
     userId: string;

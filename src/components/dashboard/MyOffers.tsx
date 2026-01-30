@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Edit, Trash2, TrendingUp, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { Package, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/utils/supabase/client';
 
 interface Offer {
     id: string;

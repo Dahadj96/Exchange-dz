@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { HubLayout } from '@/components/hub/HubLayout';
 import { DashboardSettings } from '@/components/dashboard/DashboardSettings';
 import { ClientOnly } from '@/components/ClientOnly';

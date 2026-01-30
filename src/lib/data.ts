@@ -30,20 +30,6 @@ export async function getUserActiveTrades(userId: string): Promise<Trade[]> {
         .in('status', ['Pending', 'AwaitingPayment', 'Paid', 'AwaitingRelease', 'Disputed'])
         .order('created_at', { ascending: false });
 
-    // Note: The above query assumes a relation 'offers' and joining with profiles to get partner name. 
-    // We might need to adjust the query based on exact schema or do two fetches if relations aren't set up perfectly yet.
-    // For now, simple fetch:
-
-    // Simpler version if relations are complex to type immediately:
-    /*
-    const { data, error } = await supabase
-        .from('trades')
-        .select('*')
-        .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-        .in('status', ['Pending', 'AwaitingPayment', 'Paid', 'AwaitingRelease', 'Disputed'])
-        .order('created_at', { ascending: false });
-    */
-
     if (error) {
         console.error('Error fetching trades:', error);
         return [];

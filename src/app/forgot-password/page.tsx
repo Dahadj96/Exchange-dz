@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, ArrowRight, Wallet, AlertCircle, CheckCircle2, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 export default function ForgotPasswordPage() {
     if (!supabase) return null;

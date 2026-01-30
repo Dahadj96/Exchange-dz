@@ -12,7 +12,7 @@ import {
     HelpCircle,
     LogOut
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export const IconSidebar = () => {

@@ -14,7 +14,7 @@ import {
     CreditCard
 } from 'lucide-react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
 const PLATFORMS = [

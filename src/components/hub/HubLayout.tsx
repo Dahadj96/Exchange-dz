@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useHubState } from '@/hooks/useHubState';
 import { useNotifications } from '@/hooks/useNotifications';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { HubSidebar } from './HubSidebar';
 import { HubMiddleColumn } from './HubMiddleColumn';
 import { HubContextPanel } from './HubContextPanel';

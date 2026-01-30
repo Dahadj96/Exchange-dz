@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, Shield, CreditCard, Lock, Upload, Check, Camera, Mail, Key, Bell, BellOff } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 interface SettingsViewProps {
     userId: string;
