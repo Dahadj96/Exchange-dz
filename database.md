@@ -29,7 +29,7 @@
 - id (uuid, primary key)
 - trade_id (uuid, references trades.id)
 - sender_id (uuid, references profiles.id)
-- content (text)
+- username (text)
 - created_at (timestamptz)
 
 ## Table: disputes

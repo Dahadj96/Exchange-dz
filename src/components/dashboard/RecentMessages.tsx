@@ -13,7 +13,7 @@ interface Message {
     sender_id: string;
     trade_id: string;
     sender: {
-        full_name: string;
+        username: string;
     };
 }
 
@@ -37,7 +37,7 @@ export const RecentMessages = () => {
                 .select('id')
                 .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
 
-            const tradeIds = trades?.map(t => t.id) || [];
+            const tradeIds = trades?.map((t: { id: string }) => t.id) || [];
 
             if (tradeIds.length === 0) {
                 setIsLoading(false);
@@ -49,7 +49,7 @@ export const RecentMessages = () => {
                 .from('messages')
                 .select(`
                     *,
-                    sender:sender_id(full_name)
+                    sender:sender_id(username)
                 `)
                 .in('trade_id', tradeIds)
                 .neq('sender_id', user.id)
@@ -118,11 +118,11 @@ export const RecentMessages = () => {
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                             <span className="text-xs font-black text-blue-600">
-                                                {(message.sender as any)?.full_name?.charAt(0) || '?'}
+                                                {(message.sender as any)?.username?.charAt(0).toUpperCase() || '?'}
                                             </span>
                                         </div>
                                         <span className="text-sm font-bold text-slate-900">
-                                            {(message.sender as any)?.full_name || 'Unknown'}
+                                            {(message.sender as any)?.username || 'Unknown'}
                                         </span>
                                     </div>
                                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-900 transition-colors" style={{ transform: 'scaleX(-1)' }} />

@@ -64,7 +64,7 @@ export const HubContextPanel = ({ userId }: HubContextPanelProps) => {
                     {/* Avatar */}
                     <div className="relative inline-block mb-4">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-emerald-600/20">
-                            {profile.full_name.charAt(0)}
+                            {profile.username.charAt(0).toUpperCase()}
                         </div>
                         {profile.is_verified && (
                             <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg">
@@ -74,7 +74,7 @@ export const HubContextPanel = ({ userId }: HubContextPanelProps) => {
                     </div>
 
                     {/* Name */}
-                    <h3 className="text-xl font-black text-slate-900 mb-1">{profile.full_name}</h3>
+                    <h3 className="text-xl font-black text-slate-900 mb-1">{profile.username}</h3>
                     <p className="text-xs text-slate-500 font-medium mb-4">
                         عضو منذ {new Date(profile.created_at).toLocaleDateString('ar')}
                     </p>

@@ -29,11 +29,11 @@ export const MarketplaceCard = ({ offer, seller, onActionClick }: MarketplaceCar
             <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-3">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-emerald-600/20">
-                        {seller.full_name?.charAt(0) || 'U'}
+                        {seller.username?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="text-slate-900 font-black text-lg">{seller.full_name}</span>
+                            <span className="text-slate-900 font-black text-lg">{seller.username}</span>
                             {seller.is_verified && <BadgeCheck className="w-5 h-5 text-emerald-500" />}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">

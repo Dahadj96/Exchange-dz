@@ -12,7 +12,7 @@ export type TradeStatus =
 
 export interface Profile {
     id: string;
-    full_name: string;
+    username: string;
     phone?: string;
     avatar_url?: string;
     is_verified: boolean;

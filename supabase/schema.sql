@@ -1,7 +1,7 @@
 -- Create profiles table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
-  full_name TEXT,
+  username TEXT,
   phone TEXT,
   avatar_url TEXT,
   is_verified BOOLEAN DEFAULT FALSE,

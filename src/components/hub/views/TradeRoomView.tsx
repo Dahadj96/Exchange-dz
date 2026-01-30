@@ -66,8 +66,8 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
             .select(`
                 *,
                 offer:offer_id(currency_code, rate),
-                buyer:buyer_id(full_name, avatar_url),
-                seller:seller_id(full_name, avatar_url)
+                buyer:buyer_id(username, avatar_url),
+                seller:seller_id(username, avatar_url)
             `) // Fixed: Fixed join to use offer_id and currency_code
             .eq('id', tradeId)
             .single();
@@ -183,8 +183,8 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                             <div>
                                 <div className="font-black text-slate-900">
                                     {currentUserId === trade?.buyer_id
-                                        ? (trade?.seller as any)?.full_name
-                                        : (trade?.buyer as any)?.full_name}
+                                        ? (trade?.seller as any)?.username
+                                        : (trade?.buyer as any)?.username}
                                 </div>
                                 <div className="text-xs text-slate-500 font-medium">متصل</div>
                             </div>

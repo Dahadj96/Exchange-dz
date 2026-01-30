@@ -17,7 +17,7 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     // Form state
-    const [displayName, setDisplayName] = useState('');
+    const [username, setUsername] = useState('');
     const [baridiMobRIP, setBaridiMobRIP] = useState('');
     const [wiseEmail, setWiseEmail] = useState('');
     const [payseraEmail, setPayseraEmail] = useState('');
@@ -41,7 +41,7 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
 
         if (data) {
             setProfile(data);
-            setDisplayName(data.full_name || '');
+            setUsername(data.username || '');
             setBaridiMobRIP(data.baridimob_rip || '');
             setWiseEmail(data.wise_email || '');
             setPayseraEmail(data.paysera_email || '');
@@ -57,10 +57,17 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
         setIsSaving(true);
         setSaveSuccess(false);
 
+        const sanitizedUsername = username?.trim();
+        if (!sanitizedUsername) {
+            alert('Username cannot be empty');
+            setIsSaving(false);
+            return;
+        }
+
         const { error } = await supabase
             .from('profiles')
             .update({
-                full_name: displayName,
+                username: sanitizedUsername,
                 baridimob_rip: baridiMobRIP,
                 wise_email: wiseEmail,
                 paysera_email: payseraEmail,
@@ -333,7 +340,7 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
                             <label className="block text-sm font-bold text-slate-900 mb-3">صورة الملف الشخصي</label>
                             <div className="flex items-center gap-4">
                                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-3xl shadow-lg">
-                                    {displayName.charAt(0) || 'U'}
+                                    {username.charAt(0).toUpperCase() || 'U'}
                                 </div>
                                 <button className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-2xl font-bold transition-all flex items-center gap-2">
                                     <Camera className="w-4 h-4" />
@@ -342,14 +349,14 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
                             </div>
                         </div>
 
-                        {/* Display Name */}
+                        {/* Username */}
                         <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-2">الاسم المعروض</label>
+                            <label className="block text-sm font-bold text-slate-900 mb-2">اسم المستخدم</label>
                             <input
                                 type="text"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
-                                placeholder="أدخل اسمك"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="أدخل اسم المستخدم"
                                 className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             />
                         </div>

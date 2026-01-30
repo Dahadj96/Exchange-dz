@@ -15,10 +15,10 @@ interface Trade {
         currency_code: string;
     };
     buyer: {
-        full_name: string;
+        username: string;
     };
     seller: {
-        full_name: string;
+        username: string;
     };
 }
 
@@ -65,8 +65,8 @@ export const ActiveTrades = () => {
                 .select(`
                     *,
                     offer:offer_id(currency_code),
-                    buyer:buyer_id(full_name),
-                    seller:seller_id(full_name)
+                    buyer:buyer_id(username),
+                    seller:seller_id(username)
                 `)
                 .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
                 .in('status', ['Pending', 'AwaitingPayment', 'Paid', 'AwaitingRelease'])

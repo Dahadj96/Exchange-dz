@@ -46,8 +46,8 @@ export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
                 .select(`
                   *,
                   offer:offer_id(currency_code),
-                  buyer:buyer_id(full_name),
-                  seller:seller_id(full_name)
+                  buyer:buyer_id(username),
+                  seller:seller_id(username)
                 `) // Fixed: Points to offer join after FK rename
                 .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
                 .order('created_at', { ascending: false });
@@ -208,7 +208,7 @@ export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
                                         {new Date(trade.created_at).toLocaleDateString('ar')}
                                     </div>
                                     <div className="text-xs text-slate-600 font-bold">
-                                        مع {(trade.buyer as any)?.full_name || (trade.seller as any)?.full_name}
+                                        مع {(trade.buyer as any)?.username || (trade.seller as any)?.username}
                                     </div>
                                 </div>
                             </div>

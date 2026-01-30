@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
     History,
@@ -21,13 +21,14 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ profile, trades }: DashboardClientProps) {
-    // Stats calculation based on real data or fallback
-    // For now we might hardcode some if they aren't calculated in backend yet
-    const stats = [
+    // Stats calculation based
+    const [isLoading, setIsLoading] = useState(true);
+    const [userProfile, setUserProfile] = useState<{ username: string; avatar_url?: string } | null>(null);
+    const [stats, setStats] = useState([
         { label: 'إجمالي الحجم المتداول', value: '45,210 €', icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-50' }, // Placeholder calc
         { label: 'الطلبات المكتملة', value: profile?.total_trades || 0, icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-50' },
         { label: 'قيد المراجعة', value: trades.filter(t => t.status === 'Pending').length, icon: Star, color: 'text-purple-500', bg: 'bg-purple-50' },
-    ];
+    ]);
 
     return (
         <div className="min-h-screen pt-44 pb-20 bg-slate-50/50">
@@ -38,10 +39,10 @@ export default function DashboardClient({ profile, trades }: DashboardClientProp
                         <div className="p-8 rounded-[32px] bg-white border border-slate-200 text-center shadow-sm">
                             <div className="w-24 h-24 rounded-3xl bg-emerald-600 mx-auto mb-6 flex items-center justify-center shadow-2xl shadow-emerald-600/30">
                                 <span className="text-4xl font-black text-white">
-                                    {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
+                                    {profile?.username?.charAt(0).toUpperCase() || 'U'}
                                 </span>
                             </div>
-                            <h2 className="text-xl font-bold text-slate-900 mb-1">{profile?.full_name || 'مستخدم جديد'}</h2>
+                            <h2 className="text-xl font-bold text-slate-900 mb-1">{profile?.username || 'مستخدم جديد'}</h2>
                             {profile?.is_verified && (
                                 <div className="flex items-center justify-center gap-1 text-emerald-600 mb-6">
                                     <BadgeCheck className="w-4 h-4" />

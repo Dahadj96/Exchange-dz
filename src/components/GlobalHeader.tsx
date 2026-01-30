@@ -12,7 +12,7 @@ export const GlobalHeader = () => {
     const router = useRouter();
     const pathname = usePathname();
     const [user, setUser] = useState<any>(null);
-    const [profile, setProfile] = useState<any>(null);
+    const [profile, setProfile] = useState<{ username: string; avatar_url?: string } | null>(null);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -106,11 +106,11 @@ export const GlobalHeader = () => {
                                         className="flex flex-row-reverse items-center gap-2 pr-1 pl-4 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl transition-all group"
                                     >
                                         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-emerald-500/20 group-hover:rotate-3 transition-transform">
-                                            {profile?.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+                                            {profile?.username?.charAt(0) || user.email?.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="hidden md:flex items-center gap-1.5 pt-0.5">
                                             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
-                                            <span className="text-sm font-black text-slate-800">{profile?.full_name || 'الملف الشخصي'}</span>
+                                            <span className="text-sm font-black text-slate-800">{profile?.username || 'الملف الشخصي'}</span>
                                         </div>
                                     </button>
 
@@ -127,10 +127,10 @@ export const GlobalHeader = () => {
                                                 >
                                                     <div className="p-5 bg-slate-50 border-b border-slate-200 flex flex-row-reverse items-center gap-3">
                                                         <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-xl">
-                                                            {profile?.full_name?.charAt(0) || 'U'}
+                                                            {profile?.username?.charAt(0) || 'U'}
                                                         </div>
                                                         <div className="flex-1 text-right min-w-0">
-                                                            <div className="text-sm font-black text-slate-900 truncate">{profile?.full_name || 'مستخدم'}</div>
+                                                            <div className="text-sm font-black text-slate-900 truncate">{profile?.username || 'مستخدم'}</div>
                                                             <div className="text-[10px] text-slate-500 font-bold truncate">{user.email}</div>
                                                         </div>
                                                     </div>
@@ -140,7 +140,9 @@ export const GlobalHeader = () => {
                                                             className="w-full flex flex-row-reverse items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-xl transition-colors text-right"
                                                         >
                                                             <Settings className="w-5 h-5 text-slate-400" />
-                                                            <span className="text-sm font-bold text-slate-700">الإعدادات</span>
+                                                            <span className="font-bold text-slate-700 hidden md:block">
+                                                                {profile?.username || user.email?.split('@')[0]}
+                                                            </span>
                                                         </button>
                                                         <div className="my-1 border-t border-slate-100" />
                                                         <button

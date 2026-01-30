@@ -57,10 +57,11 @@ export const MarketplaceView = () => {
                         min_amount: item.min_amount,
                         max_amount: item.max_amount,
                         created_at: item.created_at,
+                        is_active: true, // Default to true as we only fetch active offers usually, or add to select
                     },
                     seller: {
                         id: item.user_id,
-                        full_name: 'بائع', // Default if profile joining fails
+                        username: 'بائع', // Default if profile joining fails
                         is_verified: true,
                         success_rate: 98,
                         total_trades: 45,
@@ -78,7 +79,7 @@ export const MarketplaceView = () => {
     };
 
     const filteredOffers = offers.filter((item) => {
-        const matchesSearch = item.seller.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        const matchesSearch = item.seller.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.offer.platform.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.offer.currency_code.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCurrency = filterCurrency === 'all' || item.offer.platform === filterCurrency;
