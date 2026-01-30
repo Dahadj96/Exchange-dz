@@ -6,26 +6,26 @@ import { Search, Filter, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { BuyOfferModal } from '@/components/marketplace/BuyOfferModal';
-import { Listing, Profile, PlatformType, SupportedCurrency } from '@/types';
+import { Offer, Profile, PlatformType, SupportedCurrency } from '@/types';
 
 import { MarketplaceSkeleton } from '@/components/marketplace/MarketplaceSkeleton';
 
 export const MarketplaceView = () => {
     if (!supabase) return null;
-    const [listings, setListings] = useState<Array<{ listing: Listing; seller: Profile }>>([]);
+    const [offers, setOffers] = useState<Array<{ offer: Offer; seller: Profile }>>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCurrency, setFilterCurrency] = useState<string>('all');
-    const [selectedOffer, setSelectedOffer] = useState<{ listing: Listing; seller: Profile } | null>(null);
+    const [selectedOffer, setSelectedOffer] = useState<{ offer: Offer; seller: Profile } | null>(null);
 
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        fetchListings();
+        fetchOffers();
     }, []);
 
-    const fetchListings = async () => {
+    const fetchOffers = async () => {
         try {
             const { data } = await supabase
                 .from('offers')
@@ -49,7 +49,7 @@ export const MarketplaceView = () => {
                 }>;
 
                 const formatted = typedData.map((item) => ({
-                    listing: {
+                    offer: {
                         id: item.id,
                         user_id: item.user_id,
                         platform: item.platform as PlatformType,
@@ -70,8 +70,8 @@ export const MarketplaceView = () => {
                         created_at: item.created_at
                     },
                 }));
-                const typedListings: Array<{ listing: Listing; seller: Profile }> = formatted;
-                setListings(typedListings);
+                const typedOffers: Array<{ offer: Offer; seller: Profile }> = formatted;
+                setOffers(typedOffers);
             }
             setIsLoading(false);
         } catch (error) {
@@ -80,11 +80,11 @@ export const MarketplaceView = () => {
         }
     };
 
-    const filteredListings = listings.filter((item) => {
+    const filteredOffers = offers.filter((item) => {
         const matchesSearch = item.seller.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.listing.platform.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.listing.currency_code.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCurrency = filterCurrency === 'all' || item.listing.platform === filterCurrency;
+            item.offer.platform.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.offer.currency_code.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCurrency = filterCurrency === 'all' || item.offer.platform === filterCurrency;
         return matchesSearch && matchesCurrency;
     });
 
@@ -135,7 +135,7 @@ export const MarketplaceView = () => {
                         <MarketplaceSkeleton key={i} />
                     ))}
                 </div>
-            ) : filteredListings.length === 0 ? (
+            ) : filteredOffers.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center py-12">
                     <div className="text-center">
                         <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -147,15 +147,15 @@ export const MarketplaceView = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-24">
-                    {filteredListings.map((item, index) => (
+                    {filteredOffers.map((item, index) => (
                         <motion.div
-                            key={item.listing.id}
+                            key={item.offer.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
                         >
                             <MarketplaceCard
-                                listing={item.listing}
+                                offer={item.offer}
                                 seller={item.seller}
                                 onActionClick={() => setSelectedOffer(item)}
                             />
@@ -169,7 +169,7 @@ export const MarketplaceView = () => {
                 <BuyOfferModal
                     isOpen={!!selectedOffer}
                     onClose={() => setSelectedOffer(null)}
-                    listing={selectedOffer.listing}
+                    offer={selectedOffer.offer}
                     seller={selectedOffer.seller}
                 />
             )}

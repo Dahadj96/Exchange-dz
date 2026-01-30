@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Wallet, Banknote, Globe, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { Listing, PlatformType, SupportedCurrency } from '@/types';
+import { Offer, PlatformType, SupportedCurrency } from '@/types';
 
 interface CreateOfferModalProps {
     isOpen: boolean;

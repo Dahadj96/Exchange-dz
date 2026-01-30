@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
 import { ReceiptUploader } from '@/components/trade/ReceiptUploader';
 import { StatusStepper } from '@/components/trade/StatusStepper';
+import { DisputeModal } from '@/components/trade/DisputeModal';
 import Link from 'next/link';
 
 export default function TradeRoomPage() {
@@ -29,6 +30,7 @@ export default function TradeRoomPage() {
     const [user, setUser] = useState<any>(null);
     const [tradeData, setTradeData] = useState<any>(null);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -245,7 +247,10 @@ export default function TradeRoomPage() {
                     </div>
                 </div>
 
-                <button className="w-full py-5 rounded-3xl border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-all text-sm font-black flex items-center justify-center gap-2 shadow-sm font-cairo">
+                <button
+                    onClick={() => setIsDisputeModalOpen(true)}
+                    className="w-full py-5 rounded-3xl border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-all text-sm font-black flex items-center justify-center gap-2 shadow-sm font-cairo"
+                >
                     <AlertTriangle className="w-5 h-5" />
                     تحذير أو نزاع
                 </button>
@@ -343,6 +348,13 @@ export default function TradeRoomPage() {
                     </form>
                 </div>
             </main>
+
+            <DisputeModal
+                isOpen={isDisputeModalOpen}
+                onClose={() => setIsDisputeModalOpen(false)}
+                tradeId={tradeId}
+            />
+
             <style jsx>{`
                 .ltr-flip { transform: scaleX(-1); }
             `}</style>

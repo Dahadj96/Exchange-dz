@@ -4,13 +4,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Wallet, Banknote, AlertCircle, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { Listing, Profile } from '@/types';
+import { Offer, Profile } from '@/types';
 import { useRouter } from 'next/navigation';
 
 interface BuyOfferModalProps {
     isOpen: boolean;
     onClose: () => void;
-    offer: Listing;
+    offer: Offer;
     seller: Profile;
 }
 
@@ -45,7 +45,7 @@ export const BuyOfferModal = ({ isOpen, onClose, offer, seller }: BuyOfferModalP
             const { data: trade, error: tradeError } = await supabase
                 .from('trades')
                 .insert({
-                    offer_id: offer.id, // Fixed: Uses offer_id instead of legacy listing_id
+                    offer_id: offer.id, // Fixed: Uses offer_id
                     buyer_id: user.id,
                     seller_id: offer.user_id,
                     amount_asset: numericAmount,

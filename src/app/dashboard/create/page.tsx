@@ -23,7 +23,7 @@ const PLATFORMS = [
     { id: 'RedotPay', label: 'RedotPay', currencies: ['USD'] },
 ];
 
-export default function CreateListingPage() {
+export default function CreateOfferPage() {
     if (!supabase) return null;
     const [step, setStep] = useState(1);
     const [platform, setPlatform] = useState('');
@@ -56,7 +56,7 @@ export default function CreateListingPage() {
 
         if (error) {
             console.log('Error creating offer:', error);
-            alert('Error creating listing: ' + error.message);
+            alert('Error creating offer: ' + error.message);
             setLoading(false);
         } else {
             setStep(3);

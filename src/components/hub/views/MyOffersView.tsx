@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Package, Wallet } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { Listing } from '@/types';
+import { Offer } from '@/types';
 import { CreateOfferModal } from '@/components/CreateOfferModal';
 
 export const MyOffersView = () => {
     if (!supabase) return null;
-    const [offers, setOffers] = useState<Listing[]>([]);
+    const [offers, setOffers] = useState<Offer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);

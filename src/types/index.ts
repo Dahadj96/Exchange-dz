@@ -21,7 +21,7 @@ export interface Profile {
     created_at: string;
 }
 
-export interface Listing {
+export interface Offer {
     id: string;
     user_id: string;
     platform: PlatformType;
@@ -58,5 +58,14 @@ export interface Message {
     sender_id: string;
     content: string;
     attachment_url?: string;
+    created_at: string;
+}
+
+export interface Dispute {
+    id: string;
+    trade_id: string;
+    raised_by: string;
+    reason: string;
+    status: 'Open' | 'Resolved' | 'Closed';
     created_at: string;
 }

@@ -184,7 +184,7 @@ export const MyOffers = () => {
                                         <div className="font-black text-slate-900">{offer.rate}</div>
                                     </div>
                                     <div>
-                                        <div className="text-slate-500 font-medium mb-1">المخزون</div>
+                                        <div className="text-slate-500 font-medium mb-1">المتاح</div>
                                         <div className="font-black text-slate-900">{offer.available_amount}</div>
                                     </div>
                                     <div>

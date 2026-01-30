@@ -23,14 +23,14 @@ export async function getUserActiveTrades(userId: string): Promise<Trade[]> {
         .from('trades')
         .select(`
             *,
-            listing:offers(platform, currency_code),
+            offer:offers(platform, currency_code),
             partner:profiles!trades_seller_id_fkey(full_name) 
         `)
         .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
         .in('status', ['Pending', 'AwaitingPayment', 'Paid', 'AwaitingRelease', 'Disputed'])
         .order('created_at', { ascending: false });
 
-    // Note: The above query assumes a relation 'listings' and joining with profiles to get partner name. 
+    // Note: The above query assumes a relation 'offers' and joining with profiles to get partner name. 
     // We might need to adjust the query based on exact schema or do two fetches if relations aren't set up perfectly yet.
     // For now, simple fetch:
 

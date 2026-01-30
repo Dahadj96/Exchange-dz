@@ -3,16 +3,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BadgeCheck, ArrowUpRight, Award, TrendingUp, Wallet } from 'lucide-react';
-import { Listing, Profile } from '@/types';
+import { Offer, Profile } from '@/types';
 import Link from 'next/link';
 
 interface MarketplaceCardProps {
-    listing: Listing;
+    offer: Offer;
     seller: Profile;
     onActionClick?: () => void;
 }
 
-export const MarketplaceCard = ({ listing, seller, onActionClick }: MarketplaceCardProps) => {
+export const MarketplaceCard = ({ offer, seller, onActionClick }: MarketplaceCardProps) => {
     const handleClick = (e: React.MouseEvent) => {
         if (onActionClick) {
             e.preventDefault();
@@ -59,25 +59,25 @@ export const MarketplaceCard = ({ listing, seller, onActionClick }: MarketplaceC
                                 <Wallet className="w-5 h-5 text-slate-600" />
                             </div>
                             <div>
-                                <div className="text-xl font-black text-slate-900 leading-none mb-1">{listing.platform}</div>
-                                <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">{listing.currency_code}</div>
+                                <div className="text-xl font-black text-slate-900 leading-none mb-1">{offer.platform}</div>
+                                <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">{offer.currency_code}</div>
                             </div>
                         </div>
                     </div>
                     <div className="text-right">
                         <span className="text-sm text-slate-500 block mb-2 font-medium">سعر الصرف</span>
                         <div className="flex items-end justify-end gap-1">
-                            <span className="text-2xl font-black text-emerald-600">{listing.rate}</span>
+                            <span className="text-2xl font-black text-emerald-600">{offer.rate}</span>
                             <span className="text-xs font-black text-emerald-600/70 mb-1.5">DZD</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Stock & Limits */}
+                {/* Offer Details */}
                 <div className="bg-slate-50 rounded-3xl p-5 flex justify-between items-center border border-slate-200">
                     <div>
                         <span className="text-xs text-slate-500 block mb-1 font-medium">عرض البيع</span>
-                        <span className="text-base text-slate-900 font-black">{listing.available_amount} {listing.currency_code} على {listing.platform}</span>
+                        <span className="text-base text-slate-900 font-black">{offer.available_amount} {offer.currency_code} على {offer.platform}</span>
                     </div>
                 </div>
 
@@ -85,8 +85,8 @@ export const MarketplaceCard = ({ listing, seller, onActionClick }: MarketplaceC
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <span className="text-xs text-slate-500 block mb-1 font-medium">سعر الصرف</span>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-sm font-bold text-slate-600">1 {listing.currency_code} =</span>
-                            <span className="text-xl font-black text-emerald-600">{listing.rate.toFixed(2)}</span>
+                            <span className="text-sm font-bold text-slate-600">1 {offer.currency_code} =</span>
+                            <span className="text-xl font-black text-emerald-600">{offer.rate.toFixed(2)}</span>
                             <span className="text-xs font-black text-emerald-600/70">DZD</span>
                         </div>
                     </div>
@@ -97,7 +97,7 @@ export const MarketplaceCard = ({ listing, seller, onActionClick }: MarketplaceC
                     onClick={handleClick}
                     className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-3xl transition-all flex items-center justify-center gap-2 group/btn shadow-lg shadow-emerald-600/20"
                 >
-                    شراء {listing.currency_code} - الدفع بالـ DZD
+                    شراء {offer.currency_code} - الدفع بالـ DZD
                     <ArrowUpRight className="w-5 h-5 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                 </button>
             </div>

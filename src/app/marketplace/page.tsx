@@ -6,12 +6,12 @@ import { Search, SlidersHorizontal, TrendingUp, Award, Filter } from 'lucide-rea
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { BuyOfferModal } from '@/components/marketplace/BuyOfferModal';
-import { Listing, Profile } from '@/types';
+import { Offer, Profile } from '@/types';
 import { supabase } from '@/lib/supabase/client';
 import { MarketplaceSkeleton } from '@/components/marketplace/MarketplaceSkeleton';
 
 // Mock Data for demonstration
-const MOCK_LISTINGS: (Listing & { seller: Profile })[] = [
+const MOCK_OFFERS: (Offer & { seller: Profile })[] = [
     {
         id: '1',
         user_id: 'u1',
@@ -79,7 +79,7 @@ export default function MarketplacePage() {
     const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
-    const [selectedOffer, setSelectedOffer] = useState<(Listing & { seller: Profile }) | null>(null);
+    const [selectedOffer, setSelectedOffer] = useState<(Offer & { seller: Profile }) | null>(null);
     const [assetFilter, setAssetFilter] = useState('All');
     const [minAmount, setMinAmount] = useState('');
     const [maxAmount, setMaxAmount] = useState('');
@@ -105,7 +105,7 @@ export default function MarketplacePage() {
         };
     }, []);
 
-    const filteredListings = MOCK_LISTINGS.filter(item => {
+    const filteredOffers = MOCK_OFFERS.filter(item => {
         // Asset type filter
         if (assetFilter !== 'All' && item.platform !== assetFilter) return false;
 
@@ -247,7 +247,7 @@ export default function MarketplacePage() {
                                 <TrendingUp className="w-5 h-5 text-emerald-600" />
                                 <span className="text-sm font-bold text-slate-500">عروض نشطة</span>
                             </div>
-                            <div className="text-3xl font-black text-slate-900">{filteredListings.length}</div>
+                            <div className="text-3xl font-black text-slate-900">{filteredOffers.length}</div>
                         </div>
                         <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200">
                             <div className="flex items-center gap-3 mb-2">
@@ -255,7 +255,7 @@ export default function MarketplacePage() {
                                 <span className="text-sm font-bold text-slate-500">متوسط السمعة</span>
                             </div>
                             <div className="text-3xl font-black text-slate-900">
-                                {Math.round(filteredListings.reduce((acc, item) => acc + item.seller.success_rate, 0) / filteredListings.length || 0)}%
+                                {Math.round(filteredOffers.reduce((acc, item) => acc + item.seller.success_rate, 0) / filteredOffers.length || 0)}%
                             </div>
                         </div>
                         <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200">
@@ -264,7 +264,7 @@ export default function MarketplacePage() {
                                 <span className="text-sm font-bold text-slate-500">موثقون</span>
                             </div>
                             <div className="text-3xl font-black text-slate-900">
-                                {filteredListings.filter(item => item.seller.is_verified).length}
+                                {filteredOffers.filter(item => item.seller.is_verified).length}
                             </div>
                         </div>
                         <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200">
@@ -273,7 +273,7 @@ export default function MarketplacePage() {
                                 <span className="text-sm font-bold text-slate-500">أفضل سعر</span>
                             </div>
                             <div className="text-3xl font-black text-emerald-600">
-                                {Math.max(...filteredListings.map(item => item.rate)).toFixed(2)}
+                                {Math.max(...filteredOffers.map(item => item.rate)).toFixed(2)}
                             </div>
                         </div>
                     </div>
@@ -284,10 +284,10 @@ export default function MarketplacePage() {
                             [1, 2, 3, 4, 5, 6].map((i) => (
                                 <MarketplaceSkeleton key={i} />
                             ))
-                        ) : filteredListings.map((item) => (
+                        ) : filteredOffers.map((item) => (
                             <MarketplaceCard
                                 key={item.id}
-                                listing={item}
+                                offer={item}
                                 seller={item.seller}
                                 onActionClick={() => {
                                     if (!user) {
@@ -305,12 +305,12 @@ export default function MarketplacePage() {
                         <BuyOfferModal
                             isOpen={!!selectedOffer}
                             onClose={() => setSelectedOffer(null)}
-                            listing={selectedOffer}
+                            offer={selectedOffer}
                             seller={selectedOffer.seller}
                         />
                     )}
 
-                    {filteredListings.length === 0 && (
+                    {filteredOffers.length === 0 && (
                         <div className="text-center py-20">
                             <p className="text-slate-400 text-lg font-medium">لا توجد عروض متاحة حالياً تطابق معايير البحث.</p>
                         </div>
