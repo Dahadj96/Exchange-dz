@@ -63,6 +63,10 @@ CREATE TABLE IF NOT EXISTS public.disputes (
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ManageOwn" ON public.offers
+  FOR ALL
+  TO authenticated
+  USING (auth.uid() = user_id);
 ALTER TABLE public.trades ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.disputes ENABLE ROW LEVEL SECURITY;

@@ -10,6 +10,7 @@ interface CreateOfferModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
+    offerToEdit?: Offer;
 }
 
 const PLATFORMS: { id: PlatformType; label: string; currencies: SupportedCurrency[] }[] = [
@@ -18,20 +19,48 @@ const PLATFORMS: { id: PlatformType; label: string; currencies: SupportedCurrenc
     { id: 'RedotPay', label: 'RedotPay', currencies: ['USD'] },
 ];
 
-export const CreateOfferModal = ({ isOpen, onClose, onSuccess }: CreateOfferModalProps) => {
+export const CreateOfferModal = ({ isOpen, onClose, onSuccess, offerToEdit }: CreateOfferModalProps) => {
     const [step, setStep] = useState<1 | 2>(1);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Form State
-    const [selectedPlatform, setSelectedPlatform] = useState<PlatformType | null>(null);
+    const [selectedPlatform, setSelectedPlatform] = useState<PlatformType | null>(
+        offerToEdit ? offerToEdit.platform as PlatformType : null
+    );
     const [formData, setFormData] = useState({
-        currency_code: '' as SupportedCurrency | '',
-        rate: '',
-        available_amount: '',
-        min_amount: '',
-        max_amount: '',
+        currency_code: offerToEdit ? offerToEdit.currency_code as SupportedCurrency : '' as SupportedCurrency | '',
+        rate: offerToEdit ? String(offerToEdit.rate) : '',
+        available_amount: offerToEdit ? String(offerToEdit.available_amount) : '',
+        min_amount: offerToEdit ? String(offerToEdit.min_amount) : '',
+        max_amount: offerToEdit ? String(offerToEdit.max_amount) : '',
     });
+
+    React.useEffect(() => {
+        if (isOpen) {
+            if (offerToEdit) {
+                setStep(2);
+                setSelectedPlatform(offerToEdit.platform as PlatformType);
+                setFormData({
+                    currency_code: offerToEdit.currency_code as SupportedCurrency,
+                    rate: String(offerToEdit.rate),
+                    available_amount: String(offerToEdit.available_amount),
+                    min_amount: String(offerToEdit.min_amount),
+                    max_amount: String(offerToEdit.max_amount),
+                });
+            } else {
+                setStep(1);
+                setSelectedPlatform(null);
+                setFormData({
+                    currency_code: '' as SupportedCurrency | '',
+                    rate: '',
+                    available_amount: '',
+                    min_amount: '',
+                    max_amount: '',
+                });
+            }
+        }
+    }, [isOpen, offerToEdit]);
 
     const handlePlatformSelect = (platform: PlatformType) => {
         setSelectedPlatform(platform);
@@ -61,18 +90,33 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess }: CreateOfferModa
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('User not authenticated');
 
-            const { error: submitError } = await supabase.from('offers').insert({
-                user_id: user.id,
-                platform: selectedPlatform,
-                currency_code: formData.currency_code,
-                rate: Number(formData.rate) || 0,
-                available_amount: Number(formData.available_amount) || 0,
-                min_amount: Number(formData.min_amount) || 0,
-                max_amount: Number(formData.max_amount) || 0,
-                is_active: true,
-            });
+            if (offerToEdit) {
+                const { error: updateError } = await supabase
+                    .from('offers')
+                    .update({
+                        rate: Number(formData.rate) || 0,
+                        available_amount: Number(formData.available_amount) || 0,
+                        min_amount: Number(formData.min_amount) || 0,
+                        max_amount: Number(formData.max_amount) || 0,
+                    })
+                    .eq('id', offerToEdit.id)
+                    .eq('user_id', user.id); // Security: Ensure ownership
 
-            if (submitError) throw submitError;
+                if (updateError) throw updateError;
+            } else {
+                const { error: submitError } = await supabase.from('offers').insert({
+                    user_id: user.id,
+                    platform: selectedPlatform,
+                    currency_code: formData.currency_code,
+                    rate: Number(formData.rate) || 0,
+                    available_amount: Number(formData.available_amount) || 0,
+                    min_amount: Number(formData.min_amount) || 0,
+                    max_amount: Number(formData.max_amount) || 0,
+                    is_active: true,
+                });
+
+                if (submitError) throw submitError;
+            }
 
             onSuccess?.();
             onClose();
@@ -125,7 +169,9 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess }: CreateOfferModa
                             {/* Header */}
                             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                                 <div>
-                                    <h2 className="text-xl font-black text-slate-900">إنشاء عرض جديد</h2>
+                                    <h2 className="text-xl font-black text-slate-900">
+                                        {offerToEdit ? 'تعديل العرض' : 'إنشاء عرض جديد'}
+                                    </h2>
                                     <p className="text-sm text-slate-500 font-medium">خطوة {step} من 2</p>
                                 </div>
                                 <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
@@ -312,7 +358,7 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess }: CreateOfferModa
                                                 disabled={isLoading}
                                                 className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                             >
-                                                {isLoading ? 'جاري النشر...' : 'نشر العرض'}
+                                                {isLoading ? 'جاري الحفظ...' : (offerToEdit ? 'حفظ التعديلات' : 'نشر العرض')}
                                                 {!isLoading && <Check className="w-5 h-5" />}
                                             </button>
                                         </div>

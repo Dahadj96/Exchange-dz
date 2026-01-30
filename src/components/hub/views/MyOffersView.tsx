@@ -12,6 +12,7 @@ export const MyOffersView = () => {
     const [offers, setOffers] = useState<Offer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [editingOffer, setEditingOffer] = useState<Offer | undefined>(undefined);
     const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
@@ -32,6 +33,27 @@ export const MyOffersView = () => {
 
         setOffers(data || []);
         setIsLoading(false);
+    };
+
+    const handleEdit = (offer: Offer) => {
+        setEditingOffer(offer);
+        setIsCreateModalOpen(true);
+    };
+
+    const handleDelete = async (offerId: string) => {
+        if (!confirm('هل أنت متأكد من حذف هذا العرض؟')) return;
+
+        const { error } = await supabase
+            .from('offers')
+            .delete()
+            .eq('id', offerId);
+
+        if (error) {
+            console.error('Error deleting:', error);
+            alert('حدث خطأ أثناء الحذف');
+        } else {
+            fetchOffers();
+        }
     };
 
 
@@ -94,10 +116,16 @@ export const MyOffersView = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <button className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                                    <button
+                                        onClick={() => handleEdit(offer)}
+                                        className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                                    >
                                         <Edit className="w-5 h-5 text-slate-600" />
                                     </button>
-                                    <button className="p-2 hover:bg-red-50 rounded-xl transition-colors">
+                                    <button
+                                        onClick={() => handleDelete(offer.id)}
+                                        className="p-2 hover:bg-red-50 rounded-xl transition-colors"
+                                    >
                                         <Trash2 className="w-5 h-5 text-red-600" />
                                     </button>
                                 </div>
@@ -124,7 +152,11 @@ export const MyOffersView = () => {
             {userId && (
                 <CreateOfferModal
                     isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
+                    offerToEdit={editingOffer}
+                    onClose={() => {
+                        setIsCreateModalOpen(false);
+                        setEditingOffer(undefined);
+                    }}
                     onSuccess={() => {
                         fetchOffers();
                         // Ideally show a toast here
