@@ -58,13 +58,18 @@ export const CreateOfferModal = ({ isOpen, onClose, onSuccess }: CreateOfferModa
         }
 
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('User not authenticated');
+
             const { error: submitError } = await supabase.from('offers').insert({
+                user_id: user.id,
                 platform: selectedPlatform,
                 currency_code: formData.currency_code,
                 rate: Number(formData.rate) || 0,
                 available_amount: Number(formData.available_amount) || 0,
                 min_amount: Number(formData.min_amount) || 0,
                 max_amount: Number(formData.max_amount) || 0,
+                is_active: true,
             });
 
             if (submitError) throw submitError;

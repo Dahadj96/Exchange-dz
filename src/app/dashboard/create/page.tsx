@@ -44,12 +44,14 @@ export default function CreateOfferPage() {
 
         const numericAmount = Number(amount) || 0;
         const { error } = await supabase.from('offers').insert({
+            user_id: user.id,
             platform: platform,
             currency_code: currency,
             available_amount: numericAmount,
             min_amount: 0,
             max_amount: numericAmount,
             rate: Number(rate) || 0,
+            is_active: true,
         });
 
         if (error) {

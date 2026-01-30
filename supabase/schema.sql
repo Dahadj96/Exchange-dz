@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS public.offers (
   available_amount NUMERIC NOT NULL,
   min_amount NUMERIC NOT NULL,
   max_amount NUMERIC NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

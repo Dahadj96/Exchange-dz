@@ -72,7 +72,7 @@ export const MarketplaceView = () => {
             }
             setIsLoading(false);
         } catch (error) {
-            console.error('Error fetching listings:', error);
+            console.error('Error fetching offers:', error);
             setIsLoading(false);
         }
     };
@@ -125,7 +125,7 @@ export const MarketplaceView = () => {
                 </div>
             </div>
 
-            {/* Listings Grid */}
+            {/* Offers Grid */}
             {isLoading ? (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-24">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
