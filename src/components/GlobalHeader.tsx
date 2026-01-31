@@ -7,59 +7,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Settings, LogOut, ChevronDown, Menu, X, ChevronRight } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 import { NotificationDropdown } from './hub/NotificationDropdown';
+import { useUser } from '@/context/UserProvider';
+import { UserAvatar } from './common/UserAvatar';
 
 export const GlobalHeader = () => {
     const router = useRouter();
     const pathname = usePathname();
-    const [user, setUser] = useState<any>(null);
-    const [profile, setProfile] = useState<{ username: string; avatar_url?: string } | null>(null);
+    const { user, profile } = useUser();
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        // Check current session
-        supabase.auth.getSession().then(({ data: { session } }: any) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchProfile(session.user.id);
-            }
-        });
-
-        // Listen for auth changes
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchProfile(session.user.id);
-            } else {
-                setProfile(null);
-            }
-        });
-
-        return () => subscription.unsubscribe();
     }, []);
-
-    const fetchProfile = async (userId: string) => {
-        if (!userId) return;
-
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('id, username, avatar_url')
-            .eq('id', userId)
-            .single();
-
-        if (error) {
-            console.error("SupabaseDetails:", error.message, error.hint);
-            return;
-        }
-
-        if (data) {
-            setProfile(data as any);
-        }
-    };
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -112,9 +73,12 @@ export const GlobalHeader = () => {
                                         onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                                         className="flex flex-row-reverse items-center gap-2 pr-1 pl-4 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl transition-all group"
                                     >
-                                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-emerald-500/20 group-hover:rotate-3 transition-transform">
-                                            {profile?.username?.charAt(0) || user.email?.charAt(0).toUpperCase()}
-                                        </div>
+                                        <UserAvatar
+                                            avatarUrl={profile?.avatar_url}
+                                            username={profile?.username || user.email}
+                                            size="sm"
+                                            className="w-9 h-9 text-sm rounded-xl group-hover:rotate-3 transition-transform"
+                                        />
                                         <div className="hidden md:flex items-center gap-1.5 pt-0.5">
                                             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                                             <span className="text-sm font-black text-slate-800">{profile?.username || 'الملف الشخصي'}</span>
@@ -133,9 +97,12 @@ export const GlobalHeader = () => {
                                                     className="absolute right-0 top-full mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-[24px] border border-slate-200 shadow-2xl z-[100] overflow-hidden"
                                                 >
                                                     <div className="p-5 bg-slate-50 border-b border-slate-200 flex flex-row-reverse items-center gap-3">
-                                                        <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-xl">
-                                                            {profile?.username?.charAt(0) || 'U'}
-                                                        </div>
+                                                        <UserAvatar
+                                                            avatarUrl={profile?.avatar_url}
+                                                            username={profile?.username || user.email}
+                                                            size="lg"
+                                                            className="rounded-xl"
+                                                        />
                                                         <div className="flex-1 text-right min-w-0">
                                                             <div className="text-sm font-black text-slate-900 truncate">{profile?.username || 'مستخدم'}</div>
                                                             <div className="text-[10px] text-slate-500 font-bold truncate">{user.email}</div>

@@ -5,6 +5,7 @@ import "./globals.css";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { Footer } from "@/components/layout/Footer";
 import { NotificationProvider } from "@/context/NotificationProvider";
+import { UserProvider } from "@/context/UserProvider";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -27,11 +28,13 @@ export default function RootLayout({
       <body
         className={`${cairo.variable} font-cairo antialiased bg-white text-slate-900`}
       >
-        <NotificationProvider>
-          <GlobalHeader />
-          {children}
-          <Footer />
-        </NotificationProvider>
+        <UserProvider>
+          <NotificationProvider>
+            <GlobalHeader />
+            {children}
+            <Footer />
+          </NotificationProvider>
+        </UserProvider>
       </body>
     </html>
   );

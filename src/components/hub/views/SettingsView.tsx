@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { User, Shield, CreditCard, Lock, Upload, Check, Mail, Bell, BellOff } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 import { PaymentMethodsSection } from './PaymentMethodsSection';
+import { useUser } from '@/context/UserProvider';
 
 interface SettingsViewProps {
     userId: string;
@@ -12,6 +13,7 @@ interface SettingsViewProps {
 
 export const SettingsView = ({ userId }: SettingsViewProps) => {
     if (!supabase) return null;
+    const { refreshProfile } = useUser();
 
     // 1. Unified State
     const [activeTab, setActiveTab] = useState('general');
@@ -90,8 +92,9 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
 
             if (updateError) throw updateError;
 
-            // 4. Update Local State
+            // 4. Update Local State & Global Context
             setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+            await refreshProfile(); // <--- Refresh global context
             alert('تم تحديث الصورة بنجاح!');
 
         } catch (error: any) {

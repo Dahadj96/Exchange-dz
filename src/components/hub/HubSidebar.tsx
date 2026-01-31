@@ -4,6 +4,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowLeftRight, Package, Settings } from 'lucide-react';
 import { HubView } from '@/hooks/useHubState';
+import { useUser } from '@/context/UserProvider';
+import { UserAvatar } from '../common/UserAvatar';
 
 interface HubSidebarProps {
     activeView: HubView;
@@ -12,6 +14,7 @@ interface HubSidebarProps {
 }
 
 export const HubSidebar = ({ activeView, onViewChange, notificationCount }: HubSidebarProps) => {
+    const { profile } = useUser();
     const navItems = [
         {
             id: 'marketplace' as HubView,
@@ -111,9 +114,12 @@ export const HubSidebar = ({ activeView, onViewChange, notificationCount }: HubS
             </nav>
 
             {/* User Avatar at Bottom */}
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white font-black text-lg shadow-lg">
-                U
-            </div>
+            <UserAvatar
+                avatarUrl={profile?.avatar_url}
+                username={profile?.username}
+                size="lg"
+                className="bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl"
+            />
         </div>
     );
 };

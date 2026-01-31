@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { BadgeCheck, ArrowUpRight, Award, TrendingUp, Wallet, MapPin } from 'lucide-react';
 import { Offer, Profile } from '@/types';
 import Link from 'next/link';
+import { UserAvatar } from '../common/UserAvatar';
 
 interface MarketplaceCardProps {
     offer: Offer;
@@ -28,9 +29,12 @@ export const MarketplaceCard = ({ offer, seller, onActionClick }: MarketplaceCar
             {/* Seller Info with Trust Score */}
             <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-emerald-600/20">
-                        {seller.username?.charAt(0).toUpperCase() || 'U'}
-                    </div>
+                    <UserAvatar
+                        avatarUrl={seller.avatar_url}
+                        username={seller.username}
+                        size="xl"
+                        className="w-14 h-14 text-xl rounded-2xl shadow-lg shadow-emerald-600/20"
+                    />
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className="text-slate-900 font-black text-lg">{seller.full_name || seller.username}</span>

@@ -58,8 +58,9 @@ export interface Message {
     trade_id: string;
     sender_id: string;
     content: string;
-    attachment_url?: string;
+    image_url?: string;
     created_at: string;
+    read_at?: string;
 }
 
 export interface Dispute {

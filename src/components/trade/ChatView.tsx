@@ -4,6 +4,7 @@ import { Send, Image as ImageIcon, ShieldCheck, CreditCard, Paperclip } from 'lu
 import { supabase } from '@/utils/supabase/client';
 import { Message, Trade } from '@/types';
 import { usePaymentMethods } from '@/hooks/usePaymentMethods';
+import { UserAvatar } from '../common/UserAvatar';
 
 interface ChatViewProps {
     tradeId: string;
@@ -46,7 +47,7 @@ export const ChatView = ({ tradeId, currentUser, tradeData }: ChatViewProps) => 
                 schema: 'public',
                 table: 'messages',
                 filter: `trade_id=eq.${tradeId}`
-            }, (payload) => {
+            }, (payload: { new: Message }) => {
                 setMessages((prev) => [...prev, payload.new as Message]);
             })
             .subscribe();
@@ -157,9 +158,12 @@ export const ChatView = ({ tradeId, currentUser, tradeData }: ChatViewProps) => 
             {/* Chat Header */}
             <div className="p-6 border-b border-slate-200 bg-white flex justify-between items-center shadow-sm sticky top-0 z-10">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                        <ShieldCheck className="w-6 h-6 text-emerald-600" />
-                    </div>
+                    <UserAvatar
+                        avatarUrl={isBuyer ? tradeData.seller?.avatar_url : tradeData.buyer?.avatar_url}
+                        username={otherUsername}
+                        size="lg"
+                        className="rounded-2xl"
+                    />
                     <div>
                         <h2 className="text-slate-900 font-black text-lg font-cairo">الدردشة الآمنة</h2>
                         <p className="text-xs text-slate-500 font-medium tracking-tight">تواصل مع {otherUsername} بأمان</p>
@@ -185,8 +189,8 @@ export const ChatView = ({ tradeId, currentUser, tradeData }: ChatViewProps) => 
                                 </div>
                             ) : (
                                 <div className={`max-w-[80%] rounded-2xl p-4 shadow-sm ${isMe
-                                        ? 'bg-emerald-600 text-white rounded-br-none'
-                                        : 'bg-white border border-slate-200 text-slate-900 rounded-bl-none'
+                                    ? 'bg-emerald-600 text-white rounded-br-none'
+                                    : 'bg-white border border-slate-200 text-slate-900 rounded-bl-none'
                                     }`}>
                                     {msg.image_url && (
                                         <div className="mb-2 rounded-xl overflow-hidden border border-black/10">
