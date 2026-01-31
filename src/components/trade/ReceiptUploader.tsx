@@ -45,7 +45,7 @@ export const ReceiptUploader = ({ tradeId, onUploadComplete }: ReceiptUploaderPr
                 .from('trades')
                 .update({
                     receipt_url: publicUrl,
-                    status: 'Paid'
+                    status: 'payment_sent'
                 })
                 .eq('id', tradeId);
 

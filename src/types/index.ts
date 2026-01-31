@@ -4,6 +4,7 @@ export type SupportedCurrency = 'EUR' | 'USD' | 'GBP' | 'DZD';
 export type TradeStatus =
     | 'Pending'
     | 'AwaitingPayment'
+    | 'payment_sent'
     | 'Paid'
     | 'AwaitingRelease'
     | 'Completed'

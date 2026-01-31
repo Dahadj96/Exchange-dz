@@ -21,6 +21,7 @@ import { ReceiptUploader } from '@/components/trade/ReceiptUploader';
 import { StatusStepper } from '@/components/trade/StatusStepper';
 import { DisputeModal } from '@/components/trade/DisputeModal';
 import { usePaymentMethods } from '@/hooks/usePaymentMethods';
+import { UserAvatar } from '@/components/common/UserAvatar';
 
 export default function TradeRoomPage() {
     const hasMounted = useHasMounted();
@@ -57,8 +58,8 @@ export default function TradeRoomPage() {
                 .select(`
                     *,
                     offer:offer_id(*),
-                    buyer:buyer_id!trades_buyer_id_fkey(username),
-                    seller:seller_id!trades_seller_id_fkey(username)
+                    buyer:profiles!buyer_id(username, full_name, avatar_url),
+                    seller:profiles!seller_id(username, full_name, avatar_url)
                 `)
                 .eq('id', tradeId)
                 .single();
@@ -92,7 +93,7 @@ export default function TradeRoomPage() {
                 schema: 'public',
                 table: 'trades',
                 filter: `id=eq.${tradeId}`
-            }, (payload) => {
+            }, (payload: any) => {
                 setTradeData((prev: any) => ({ ...prev, ...payload.new }));
                 updateStep(payload.new.status);
             })
@@ -105,7 +106,7 @@ export default function TradeRoomPage() {
                 schema: 'public',
                 table: 'messages',
                 filter: `trade_id=eq.${tradeId}`
-            }, (payload) => {
+            }, (payload: any) => {
                 setMessages((prev) => [...prev, payload.new as Message]);
             })
             .subscribe();
@@ -131,7 +132,8 @@ export default function TradeRoomPage() {
             case 'AwaitingPayment': // After agreement
                 setCurrentStep(2);
                 break;
-            case 'Paid': // After payment sent
+            case 'payment_sent': // Buyer sent payment
+            case 'Paid': // After payment confirmed/sent
             case 'AwaitingRelease':
                 setCurrentStep(3);
                 break;
@@ -196,7 +198,7 @@ export default function TradeRoomPage() {
             await supabase.from('messages').insert({
                 trade_id: tradeId,
                 sender_id: user.id,
-                content: `🚀 ${statusMsg}`,
+                content: `🚀 ${status === 'payment_sent' ? 'قام المشتري بإرسال إثبات الدفع 🧾' : statusMsg}`,
                 type: 'system'
             });
         }
@@ -253,8 +255,8 @@ export default function TradeRoomPage() {
                                 {(tradeData.status === 'AwaitingPayment') && isSeller && 'بانتظار المشتري لإتمام عملية التحويل ورفع الوصل.'}
                                 {(tradeData.status === 'AwaitingPayment') && isBuyer && 'الرجاء تحويل المبلغ للحساب الموضح ورفع إثبات الدفع.'}
 
-                                {(tradeData.status === 'Paid' || tradeData.status === 'AwaitingRelease') && isSeller && 'قام المشتري بالدفع. يرجى التأكد من وصول المبلغ لحسابك ثم تحرير العملة.'}
-                                {(tradeData.status === 'Paid' || tradeData.status === 'AwaitingRelease') && isBuyer && 'بانتظار البائع لتأكيد الاستلام وتحرير العملة.'}
+                                {(tradeData.status === 'payment_sent' || tradeData.status === 'Paid' || tradeData.status === 'AwaitingRelease') && isSeller && 'قام المشتري بالدفع. يرجى التأكد من وصول المبلغ لحسابك ثم تحرير العملة.'}
+                                {(tradeData.status === 'payment_sent' || tradeData.status === 'Paid' || tradeData.status === 'AwaitingRelease') && isBuyer && 'بانتظار البائع لتأكيد الاستلام وتحرير العملة.'}
 
                                 {tradeData.status === 'Completed' && 'تمت العملية بنجاح! شكراً لاستخدامكم منصتنا.'}
                             </p>
@@ -308,9 +310,12 @@ export default function TradeRoomPage() {
             <main className="flex-1 flex flex-col h-[calc(100vh-8rem)] bg-white relative">
                 <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-20">
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-3xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shadow-sm">
-                            <ShieldCheck className="w-7 h-7 text-emerald-600" />
-                        </div>
+                        <UserAvatar
+                            avatarUrl={isBuyer ? tradeData.seller?.avatar_url : tradeData.buyer?.avatar_url}
+                            username={isBuyer ? (tradeData.seller?.username || 'البائع') : (tradeData.buyer?.username || 'المشتري')}
+                            size="lg"
+                            className="bg-emerald-50 border border-emerald-100 shadow-sm"
+                        />
                         <div>
                             <h2 className="text-slate-900 font-black text-xl font-cairo">الدردشة الآمنة</h2>
                             <p className="text-sm text-slate-500 font-medium tracking-tight">تواصل مع {isBuyer ? (tradeData.seller?.username || 'البائع') : (tradeData.buyer?.username || 'المشتري')} بأمان.</p>
@@ -364,14 +369,18 @@ export default function TradeRoomPage() {
                             <div className="w-full md:w-auto">
                                 <ReceiptUploader
                                     tradeId={tradeId}
-                                    onUploadComplete={() => updateTradeStatus('Paid')}
+                                    onUploadComplete={(url) => {
+                                        // Send image message
+                                        sendMessage(undefined, 'تم رفع وصل التحويل 🧾', 'image' as any); // Type cast if needed or add 'image' to types
+                                        // Status update is handled inside ReceiptUploader but we can double check or refresh
+                                    }}
                                 />
                             </div>
                         </div>
                     )}
 
                     {/* Seller: Confirm Release */}
-                    {isSeller && (tradeData.status === 'Paid' || tradeData.status === 'AwaitingRelease') && (
+                    {isSeller && (tradeData.status === 'payment_sent' || tradeData.status === 'Paid' || tradeData.status === 'AwaitingRelease') && (
                         <div className="mb-8 p-10 bg-slate-900 rounded-[40px] text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-slate-900/20">
                             <div className="flex-1 text-center md:text-right">
                                 <h3 className="text-2xl font-black mb-3 font-cairo">تأكيد استلام المبلغ</h3>

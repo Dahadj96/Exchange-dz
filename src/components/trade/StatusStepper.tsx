@@ -12,8 +12,7 @@ export const StatusStepper = ({ currentStep }: StatusStepperProps) => {
     const steps = [
         { id: 1, name: 'الاتفاق', icon: MessageSquare, description: 'بدء المحادثة' },
         { id: 2, name: 'الدفع', icon: Wallet, description: 'إرسال واستلام بالدفع' },
-        { id: 3, name: 'التأكيد', icon: FileCheck, description: 'تأكيد الدفع' },
-        { id: 4, name: 'الاستلام', icon: ShieldCheck, description: 'تحرير الأصول' },
+        { id: 3, name: 'التحرير', icon: ShieldCheck, description: 'تحرير الأصول' },
     ];
 
     return (
