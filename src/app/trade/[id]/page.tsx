@@ -297,6 +297,32 @@ export default function TradeRoomPage() {
                     </div>
                 </div>
 
+                {/* Seller Actions Sidebar */}
+                {isSeller && (
+                    <div className="space-y-3">
+                        {(tradeData.status === 'Pending' || tradeData.status === 'AwaitingPayment') && (
+                            <button
+                                onClick={() => setShowPaymentSelection(true)}
+                                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all"
+                            >
+                                <CreditCard className="w-5 h-5" />
+                                إرسال بيانات الدفع
+                            </button>
+                        )}
+
+                        {(tradeData.status === 'payment_sent' || tradeData.status === 'Paid' || tradeData.status === 'AwaitingRelease') && (
+                            <button
+                                disabled={isUpdating}
+                                onClick={() => updateTradeStatus('Completed')}
+                                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
+                            >
+                                <ShieldCheck className="w-5 h-5" />
+                                {isUpdating ? 'جاري التحرير...' : 'تحرير الأصول الآن'}
+                            </button>
+                        )}
+                    </div>
+                )}
+
                 <button
                     onClick={() => setIsDisputeModalOpen(true)}
                     className="w-full py-5 rounded-3xl border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-all text-sm font-black flex items-center justify-center gap-2 shadow-sm font-cairo"
@@ -418,47 +444,6 @@ export default function TradeRoomPage() {
                                     <CreditCard className="w-7 h-7" />
                                 </button>
 
-                                {/* Payment Method Selection Dropdown */}
-                                <AnimatePresence>
-                                    {showPaymentSelection && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 10 }}
-                                            className="absolute bottom-full left-0 mb-4 w-72 bg-white rounded-3xl shadow-2xl border border-slate-100 p-4 z-50 overflow-hidden"
-                                        >
-                                            <div className="flex justify-between items-center mb-4 px-2">
-                                                <span className="text-sm font-black text-slate-900">1. اختر وسيلة الدفع</span>
-                                                <button onClick={() => setShowPaymentSelection(false)} className="text-slate-400 hover:text-slate-600">
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                            <div className="space-y-2 max-h-60 overflow-y-auto">
-                                                {methods.map((method) => (
-                                                    <button
-                                                        key={method.id}
-                                                        type="button"
-                                                        onClick={() => handleSelectPaymentMethod(method)}
-                                                        className="w-full p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 transition-all text-right flex items-center justify-between group"
-                                                    >
-                                                        <div>
-                                                            <div className="font-bold text-slate-900 group-hover:text-emerald-700 text-sm">{method.provider}</div>
-                                                            <div className="text-[10px] text-slate-400 font-mono mt-1">{method.account_identifier}</div>
-                                                        </div>
-                                                        <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:border-emerald-300">
-                                                            <Check className="w-3 h-3 text-emerald-500 opacity-0 group-hover:opacity-100" />
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                                {methods.length === 0 && (
-                                                    <Link href="/dashboard/settings" className="block text-center p-4 text-xs text-slate-400 hover:text-emerald-600">
-                                                        + إضافة وسيلة دفع
-                                                    </Link>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
                             </div>
                         )}
 
@@ -483,6 +468,56 @@ export default function TradeRoomPage() {
                 onClose={() => setIsDisputeModalOpen(false)}
                 tradeId={tradeId}
             />
+
+            {/* Payment Method Selection Modal */}
+            <AnimatePresence>
+                {showPaymentSelection && (
+                    <>
+                        <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowPaymentSelection(false)} />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="fixed inset-0 z-[70] flex items-center justify-center p-4 pointer-events-none"
+                        >
+                            <div className="bg-white rounded-[32px] w-full max-w-sm shadow-2xl pointer-events-auto overflow-hidden">
+                                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                    <h3 className="text-lg font-black text-slate-900">اختر وسيلة الدفع</h3>
+                                    <button onClick={() => setShowPaymentSelection(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                                        <X className="w-5 h-5 text-slate-500" />
+                                    </button>
+                                </div>
+                                <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
+                                    {methods.map((method) => (
+                                        <button
+                                            key={method.id}
+                                            type="button"
+                                            onClick={() => handleSelectPaymentMethod(method)}
+                                            className="w-full p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 transition-all text-right flex items-center justify-between group"
+                                        >
+                                            <div>
+                                                <div className="font-bold text-slate-900 group-hover:text-emerald-700 text-sm">{method.provider}</div>
+                                                <div className="text-[10px] text-slate-400 font-mono mt-1">{method.account_identifier}</div>
+                                            </div>
+                                            <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:border-emerald-300">
+                                                <Check className="w-3 h-3 text-emerald-500 opacity-0 group-hover:opacity-100" />
+                                            </div>
+                                        </button>
+                                    ))}
+                                    {methods.length === 0 && (
+                                        <div className="text-center py-8">
+                                            <p className="text-slate-400 text-sm mb-4">لا توجد طرق دفع محفوظة</p>
+                                            <Link href="/dashboard/settings" className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm">
+                                                + إضافة وسيلة دفع
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
 
             <style jsx>{`
                 .ltr-flip { transform: scaleX(-1); }
