@@ -24,6 +24,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [sellerPaymentMethods, setSellerPaymentMethods] = useState<any[]>([]);
 
     useEffect(() => {
         fetchTradeData();
@@ -143,15 +144,50 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
         }
     };
 
-    const handleSendPaymentInfo = async () => {
-        // For now, we just send a message. In future, we can have a dedicated structured data.
-        const infoMessage = `
-**معلومات الدفع:**
-يرجى إرسال المبلغ إلى الحساب التالي.
-(يمكن للبائع إرفاق تفاصيل الحساب هنا)
-        `;
+    const fetchSellerPaymentMethods = async () => {
+        if (!trade?.seller_id) return;
+        const { data } = await supabase
+            .from('payment_methods')
+            .select('provider, account_identifier')
+            .eq('user_id', trade.seller_id);
+        setSellerPaymentMethods(data || []);
+    };
 
-        await sendMessage(infoMessage);
+    const handleSendPaymentInfo = async () => {
+        // Fetch methods first if not fetched
+        let methods = sellerPaymentMethods;
+        if (methods.length === 0) {
+            if (!trade?.seller_id) return;
+            const { data } = await supabase
+                .from('payment_methods')
+                .select('provider, account_identifier')
+                .eq('user_id', trade.seller_id);
+            methods = data || [];
+            setSellerPaymentMethods(methods);
+        }
+
+        let content = '';
+        if (methods.length > 0) {
+            const method = methods[0];
+            content = `يرجى الدفع عبر ${method.provider}: ${method.account_identifier}`;
+        } else {
+            content = 'يرجى التواصل مع البائع للحصول على تفاصيل الدفع.';
+        }
+
+        if (!currentUserId) return;
+
+        const { error } = await supabase.from('messages').insert({
+            trade_id: tradeId,
+            sender_id: currentUserId,
+            content: content,
+            type: 'payment_info'
+        });
+
+        if (error) {
+            console.error('Error sending payment info:', error);
+            alert('Error sending payment info: ' + error.message);
+            return;
+        }
 
         // Update status to AwaitingPayment
         await supabase.from('trades').update({ status: 'AwaitingPayment' }).eq('id', tradeId);
@@ -248,7 +284,9 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                     <div className="flex justify-center gap-4 mb-4">
                         {currentUserId === trade?.seller_id && trade?.status === 'Pending' && (
                             <button
-                                onClick={handleSendPaymentInfo}
+                                onClick={() => {
+                                    fetchSellerPaymentMethods().then(() => handleSendPaymentInfo());
+                                }}
                                 className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all"
                             >
                                 إرسال معلومات الدفع
