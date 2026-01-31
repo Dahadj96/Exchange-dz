@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Shield, Wallet, PackageCheck } from 'lucide-react';
+import { Check, Shield, Wallet, PackageCheck, MessageSquare, FileCheck, ShieldCheck } from 'lucide-react';
 
 interface StatusStepperProps {
     currentStep: number;
@@ -10,9 +10,10 @@ interface StatusStepperProps {
 
 export const StatusStepper = ({ currentStep }: StatusStepperProps) => {
     const steps = [
-        { id: 1, name: 'الاتفاق والدفع', icon: Wallet, description: 'تحويل المبلغ' },
-        { id: 2, name: 'تأكيد الدفع', icon: Shield, description: 'رفع الوصل' },
-        { id: 3, name: 'الاستلام', icon: PackageCheck, description: 'تحرير الأصول' },
+        { id: 1, name: 'الاتفاق', icon: MessageSquare, description: 'بدء المحادثة' },
+        { id: 2, name: 'الدفع', icon: Wallet, description: 'إرسال واستلام بالدفع' },
+        { id: 3, name: 'التأكيد', icon: FileCheck, description: 'تأكيد الدفع' },
+        { id: 4, name: 'الاستلام', icon: ShieldCheck, description: 'تحرير الأصول' },
     ];
 
     return (

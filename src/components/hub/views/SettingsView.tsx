@@ -94,7 +94,7 @@ export const SettingsView = ({ userId }: SettingsViewProps) => {
 
             // 4. Update Local State & Global Context
             setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
-            await refreshProfile(); // <--- Refresh global context
+            await refreshProfile(); // <--- Verified: Refresh global context immediately
             alert('تم تحديث الصورة بنجاح!');
 
         } catch (error: any) {

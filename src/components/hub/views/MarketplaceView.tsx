@@ -7,6 +7,7 @@ import { supabase } from '@/utils/supabase/client';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { BuyOfferModal } from '@/components/marketplace/BuyOfferModal';
 import { Offer, Profile, PlatformType, SupportedCurrency } from '@/types';
+import { CreateOfferModal } from '@/components/CreateOfferModal';
 
 import { MarketplaceSkeleton } from '@/components/marketplace/MarketplaceSkeleton';
 
@@ -17,6 +18,7 @@ export const MarketplaceView = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCurrency, setFilterCurrency] = useState<string>('all');
     const [selectedOffer, setSelectedOffer] = useState<{ offer: Offer; seller: Profile } | null>(null);
+    const [isCreateOfferModalOpen, setIsCreateOfferModalOpen] = useState(false);
 
     const [mounted, setMounted] = useState(false);
 
@@ -31,7 +33,7 @@ export const MarketplaceView = () => {
                 .from('offers')
                 .select(`
                     *,
-                    seller:profiles!user_id(id, username, full_name, city, created_at)
+                    seller:profiles!user_id(id, username, full_name, city, avatar_url, is_verified, success_rate, total_trades, created_at)
                 `)
                 .order('created_at', { ascending: false });
 
@@ -55,9 +57,10 @@ export const MarketplaceView = () => {
                         username: item.seller.username || 'مستخدم',
                         full_name: item.seller.full_name || 'بائع موثق',
                         city: item.seller.city,
-                        is_verified: false, // Default since column missing
-                        success_rate: 100,  // Default since column missing
-                        total_trades: 0,    // Default since column missing
+                        avatar_url: item.seller.avatar_url,
+                        is_verified: item.seller.is_verified || false,
+                        success_rate: item.seller.success_rate || 0,
+                        total_trades: item.seller.total_trades || 0,
                         created_at: item.seller.created_at
                     },
                 }));
@@ -119,9 +122,8 @@ export const MarketplaceView = () => {
                 </div>
             </div>
 
-            {/* Offers Grid */}
             {isLoading ? (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-24">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-24">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                         <MarketplaceSkeleton key={i} />
                     ))}
@@ -137,7 +139,7 @@ export const MarketplaceView = () => {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-24">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-24">
                     {filteredOffers.map((item, index) => (
                         <motion.div
                             key={item.offer.id}
@@ -165,12 +167,23 @@ export const MarketplaceView = () => {
                 />
             )}
 
+            {/* Create Offer Modal */}
+            <CreateOfferModal
+                isOpen={isCreateOfferModalOpen}
+                onClose={() => setIsCreateOfferModalOpen(false)}
+                onSuccess={() => {
+                    fetchOffers();
+                    setIsCreateOfferModalOpen(false);
+                }}
+            />
+
             {/* Create Offer FAB */}
             <motion.button
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                onClick={() => setIsCreateOfferModalOpen(true)}
                 className="fixed bottom-8 left-8 w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full shadow-2xl shadow-emerald-600/40 flex items-center justify-center text-white hover:shadow-emerald-600/60 transition-shadow z-50"
             >
                 <Plus className="w-8 h-8" />

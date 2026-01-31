@@ -28,16 +28,16 @@ export const MarketplaceCard = ({ offer, seller, onActionClick }: MarketplaceCar
         >
             {/* Seller Info with Trust Score */}
             <div className="flex justify-between items-start mb-6">
-                <div className="flex items-center gap-3">
+                <Link href={`/user/${seller.id}`} className="flex items-center gap-3 group/seller transition-transform hover:scale-105">
                     <UserAvatar
                         avatarUrl={seller.avatar_url}
                         username={seller.username}
                         size="xl"
-                        className="w-14 h-14 text-xl rounded-2xl shadow-lg shadow-emerald-600/20"
+                        className="w-14 h-14 text-xl rounded-2xl shadow-lg shadow-emerald-600/20 group-hover/seller:shadow-emerald-600/30 transition-all"
                     />
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="text-slate-900 font-black text-lg">{seller.full_name || seller.username}</span>
+                            <span className="text-slate-900 font-black text-lg group-hover/seller:text-emerald-700 transition-colors">{seller.full_name || seller.username}</span>
                             {seller.is_verified && <BadgeCheck className="w-5 h-5 text-emerald-500" />}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
@@ -53,7 +53,7 @@ export const MarketplaceCard = ({ offer, seller, onActionClick }: MarketplaceCar
                             )}
                         </div>
                     </div>
-                </div>
+                </Link>
 
                 {/* Trust Score Badge */}
                 <div className="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-200">

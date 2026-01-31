@@ -59,6 +59,7 @@ export interface Message {
     sender_id: string;
     content: string;
     image_url?: string;
+    type?: 'text' | 'payment_info' | 'system';
     created_at: string;
     read_at?: string;
 }
@@ -70,4 +71,14 @@ export interface Dispute {
     reason: string;
     status: 'Open' | 'Resolved' | 'Closed';
     created_at: string;
+}
+
+export interface Review {
+    id: string;
+    reviewer_id: string;
+    reviewed_id: string;
+    rating: number;
+    comment: string;
+    created_at: string;
+    reviewer?: Profile;
 }
