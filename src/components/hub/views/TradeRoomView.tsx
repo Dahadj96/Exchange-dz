@@ -6,6 +6,7 @@ import { ArrowLeft, Send, Paperclip, User } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 import { StatusStepper } from '@/components/trade/StatusStepper';
 import { Message } from '@/types';
+import { UserAvatar } from '@/components/common/UserAvatar';
 
 interface TradeRoomViewProps {
     tradeId: string;
@@ -20,6 +21,9 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchTradeData();
@@ -31,8 +35,8 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
         });
 
         // Real-time message subscription
-        const channel = supabase
-            .channel(`trade-${tradeId}`)
+        const messageChannel = supabase
+            .channel(`trade-messages-${tradeId}`)
             .on(
                 'postgres_changes',
                 {
@@ -47,8 +51,26 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
             )
             .subscribe();
 
+        // Real-time trade status subscription
+        const tradeChannel = supabase
+            .channel(`trade-status-${tradeId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'trades',
+                    filter: `id=eq.${tradeId}`,
+                },
+                (payload: any) => {
+                    setTrade((prev: any) => ({ ...prev, ...payload.new }));
+                }
+            )
+            .subscribe();
+
         return () => {
-            supabase.removeChannel(channel);
+            supabase.removeChannel(messageChannel);
+            supabase.removeChannel(tradeChannel);
         };
     }, [tradeId]);
 
@@ -121,6 +143,57 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
         }
     };
 
+    const handleSendPaymentInfo = async () => {
+        // For now, we just send a message. In future, we can have a dedicated structured data.
+        const infoMessage = `
+**معلومات الدفع:**
+يرجى إرسال المبلغ إلى الحساب التالي.
+(يمكن للبائع إرفاق تفاصيل الحساب هنا)
+        `;
+
+        await sendMessage(infoMessage);
+
+        // Update status to AwaitingPayment
+        await supabase.from('trades').update({ status: 'AwaitingPayment' }).eq('id', tradeId);
+    };
+
+    const handleUploadReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        setIsConfirmingPayment(true);
+        const file = e.target.files[0];
+        const fileExt = file.name.split('.').pop();
+        const filePath = `receipts/${tradeId}-${Date.now()}.${fileExt}`;
+
+        try {
+            // Upload
+            const { error: uploadError } = await supabase.storage.from('receipts').upload(filePath, file);
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(filePath);
+
+            // Send receipt as message
+            await sendMessage(`تم إرفاق إيصال الدفع: ${publicUrl}`);
+
+            // Update status
+            await supabase.from('trades').update({ status: 'Paid' }).eq('id', tradeId);
+
+        } catch (error) {
+            console.error('Error uploading receipt:', error);
+            alert('فشل رفع الإيصال');
+        } finally {
+            setIsConfirmingPayment(false);
+        }
+    };
+
+    const sendMessage = async (content: string) => {
+        if (!currentUserId) return;
+        await supabase.from('messages').insert({
+            trade_id: tradeId,
+            sender_id: currentUserId,
+            content: content.trim(),
+        });
+    }
+
     const getCurrentStep = () => {
         if (!trade) return 1;
         switch (trade.status) {
@@ -170,6 +243,58 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                 {/* Top Section: Status Stepper (40%) */}
                 <div className="flex-shrink-0">
                     <StatusStepper currentStep={getCurrentStep()} />
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-center gap-4 mb-4">
+                        {currentUserId === trade?.seller_id && trade?.status === 'Pending' && (
+                            <button
+                                onClick={handleSendPaymentInfo}
+                                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all"
+                            >
+                                إرسال معلومات الدفع
+                            </button>
+                        )}
+                        {currentUserId === trade?.seller_id && (trade?.status === 'Pending' || trade?.status === 'AwaitingPayment') && (
+                            <button
+                                onClick={handleSendPaymentInfo} // Re-send if needed
+                                className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm"
+                            >
+                                تحديث معلومات الدفع
+                            </button>
+                        )}
+
+                        {currentUserId === trade?.buyer_id && (trade?.status === 'AwaitingPayment' || trade?.status === 'Pending') && (
+                            <>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleUploadReceipt}
+                                    className="hidden"
+                                    accept="image/*"
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isConfirmingPayment}
+                                    className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all disabled:opacity-50"
+                                >
+                                    {isConfirmingPayment ? 'جاري الرفع...' : 'تأكيد الدفع (رفع إيصال)'}
+                                </button>
+                            </>
+                        )}
+
+                        {currentUserId === trade?.seller_id && trade?.status === 'Paid' && (
+                            <button
+                                onClick={async () => {
+                                    if (confirm('هل أنت متأكد من استلام المبلغ؟ سيتم تحرير الأصول للبائع.')) {
+                                        await supabase.from('trades').update({ status: 'Completed' }).eq('id', tradeId);
+                                    }
+                                }}
+                                className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
+                            >
+                                تأكيد الاستلام وتحرير الأصول
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Bottom Section: Chat (60%) */}
@@ -177,9 +302,15 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                     {/* Chat Header */}
                     <div className="p-6 border-b border-slate-200">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-black">
-                                <User className="w-5 h-5" />
-                            </div>
+                            <UserAvatar
+                                avatarUrl={currentUserId === trade?.buyer_id
+                                    ? (trade?.seller as any)?.avatar_url
+                                    : (trade?.buyer as any)?.avatar_url}
+                                username={currentUserId === trade?.buyer_id
+                                    ? (trade?.seller as any)?.username
+                                    : (trade?.buyer as any)?.username}
+                                size="md"
+                            />
                             <div>
                                 <div className="font-black text-slate-900">
                                     {currentUserId === trade?.buyer_id
