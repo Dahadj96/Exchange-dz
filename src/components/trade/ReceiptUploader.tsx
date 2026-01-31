@@ -98,7 +98,7 @@ export const ReceiptUploader = ({ tradeId, onUploadComplete }: ReceiptUploaderPr
                             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform border border-slate-100">
                                 <ImageIcon className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                             </div>
-                            <p className="mb-2 text-sm text-slate-700 font-bold">ارفـع وصل التحويل</p>
+                            <p className="mb-2 text-sm text-slate-700 font-bold">تم التحويل - ارفـع الوصل</p>
                             <p className="text-xs text-slate-500">PNG, JPG (حد أقصى 5MB)</p>
                         </div>
                         <input type="file" className="hidden" accept="image/*" onChange={handleUpload} disabled={uploading} />

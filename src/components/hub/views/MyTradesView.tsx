@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Clock, CheckCircle, AlertCircle, ArrowRight, Package } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 import { Trade } from '@/types';
+import { useRouter } from 'next/navigation';
 
 interface MyTradesViewProps {
     onTradeClick: (tradeId: string) => void;
@@ -12,6 +13,7 @@ interface MyTradesViewProps {
 
 export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
     if (!supabase) return null;
+    const router = useRouter();
     const [trades, setTrades] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -180,7 +182,7 @@ export const MyTradesView = ({ onTradeClick }: MyTradesViewProps) => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            onClick={() => onTradeClick(trade.id)}
+                            onClick={() => router.push(`/trade/${trade.id}`)}
                             whileHover={{ scale: 1.02, x: -5 }}
                             className="p-6 rounded-3xl bg-white border border-slate-200 hover:border-emerald-300 hover:shadow-xl transition-all cursor-pointer group"
                         >
