@@ -8,6 +8,7 @@ import { StatusStepper } from '@/components/trade/StatusStepper';
 import { Message } from '@/types';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { ReceiptUploader } from '@/components/trade/ReceiptUploader';
+import { DisputeModal } from '@/components/trade/DisputeModal';
 
 interface TradeRoomViewProps {
     tradeId: string;
@@ -25,6 +26,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     // const fileInputRef = useRef<HTMLInputElement>(null); // Removed locally
     const [sellerPaymentMethods, setSellerPaymentMethods] = useState<any[]>([]);
+    const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
 
 
     useEffect(() => {
@@ -357,6 +359,14 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                                 إلغاء التداول
                             </button>
                         )}
+
+                        <button
+                            onClick={() => setIsDisputeModalOpen(true)}
+                            className="w-full py-3 mt-2 rounded-xl border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 transition-all text-sm font-bold flex items-center justify-center gap-2"
+                        >
+                            <AlertTriangle className="w-4 h-4" />
+                            إبلاغ عن مشكلة
+                        </button>
                     </div>
                 </div>
             </div>
@@ -463,6 +473,12 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                     </div>
                 </div>
             </div>
+
+            <DisputeModal
+                isOpen={isDisputeModalOpen}
+                onClose={() => setIsDisputeModalOpen(false)}
+                tradeId={tradeId}
+            />
         </div>
     );
 };
