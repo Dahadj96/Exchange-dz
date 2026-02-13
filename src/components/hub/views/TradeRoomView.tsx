@@ -252,7 +252,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
 
     if (isLoading) {
         return (
-            <div className="h-full flex items-center justify-center">
+            <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-slate-600 font-medium">جاري التحميل...</p>
@@ -262,26 +262,28 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
     }
 
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-[calc(100vh-6rem)] flex flex-col">
             {/* Header with Back Button */}
-            <div className="mb-6">
-                <button
-                    onClick={onBack}
-                    className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold mb-4 transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                    العودة إلى التداولات
-                </button>
-                <h2 className="text-4xl font-black text-slate-900 mb-2">غرفة التداول</h2>
-                <p className="text-slate-500 font-medium">
-                    تداول {trade?.amount_dzd} DZD من {(trade?.offer as any)?.currency_code}
-                </p>
+            <div className="mb-4 flex items-center justify-between">
+                <div>
+                    <button
+                        onClick={onBack}
+                        className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold mb-1 transition-colors group"
+                    >
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        العودة
+                    </button>
+                    <h2 className="text-2xl font-black text-slate-900">غرفة التداول <span className="text-slate-400 font-medium text-lg">#{tradeId.slice(0, 8)}</span></h2>
+                </div>
+                <div className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 shadow-sm">
+                    {trade?.amount_dzd} <span className="text-xs">DZD</span>
+                </div>
             </div>
 
             {/* Split View Container */}
-            <div className="flex-1 flex flex-col gap-6 min-h-0">
-                {/* Top Section: Status Stepper (40%) */}
-                <div className="flex-shrink-0">
+            <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden">
+                {/* Side Section: Status & Actions (40%) */}
+                <div className="flex-shrink-0 lg:w-96 overflow-y-auto pr-2 custom-scrollbar">
                     <StatusStepper currentStep={getCurrentStep()} />
 
                     {/* Cancelled Banner */}

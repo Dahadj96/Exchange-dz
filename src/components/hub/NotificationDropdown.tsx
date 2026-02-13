@@ -34,7 +34,7 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
 
         // Subscribe to real-time notifications
         const channel = supabase
-            .channel('notifications-channel')
+            .channel(`notifications-${userId}`)
             .on(
                 'postgres_changes',
                 {
@@ -44,6 +44,7 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
                     filter: `user_id=eq.${userId}`,
                 },
                 (payload) => {
+                    // console.log('Realtime notification received:', payload); // Debug log
                     const newNotification = payload.new as Notification;
                     setNotifications((prev) => [newNotification, ...prev].slice(0, 10));
                     setUnreadCount((prev) => prev + 1);
