@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS public.messages (
   trade_id UUID REFERENCES public.trades(id) NOT NULL,
   sender_id UUID REFERENCES public.profiles(id) NOT NULL,
   content TEXT NOT NULL,
+  type TEXT DEFAULT 'text',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
