@@ -7,6 +7,7 @@ import { supabase } from '@/utils/supabase/client';
 import { StatusStepper } from '@/components/trade/StatusStepper';
 import { Message } from '@/types';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { ReceiptUploader } from '@/components/trade/ReceiptUploader';
 
 interface TradeRoomViewProps {
     tradeId: string;
@@ -22,9 +23,9 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-    const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    // const fileInputRef = useRef<HTMLInputElement>(null); // Removed locally
     const [sellerPaymentMethods, setSellerPaymentMethods] = useState<any[]>([]);
+
 
     useEffect(() => {
         fetchTradeData();
@@ -193,33 +194,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
         await supabase.from('trades').update({ status: 'AwaitingPayment' }).eq('id', tradeId);
     };
 
-    const handleUploadReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0) return;
-        setIsConfirmingPayment(true);
-        const file = e.target.files[0];
-        const fileExt = file.name.split('.').pop();
-        const filePath = `receipts/${tradeId}-${Date.now()}.${fileExt}`;
-
-        try {
-            // Upload
-            const { error: uploadError } = await supabase.storage.from('receipts').upload(filePath, file);
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(filePath);
-
-            // Send receipt as message
-            await sendMessage(`تم إرفاق إيصال الدفع: ${publicUrl}`);
-
-            // Update status
-            await supabase.from('trades').update({ status: 'Paid' }).eq('id', tradeId);
-
-        } catch (error) {
-            console.error('Error uploading receipt:', error);
-            alert('فشل رفع الإيصال');
-        } finally {
-            setIsConfirmingPayment(false);
-        }
-    };
+    // handleUploadReceipt removed - Logic moved to ReceiptUploader component
 
     const sendMessage = async (content: string) => {
         if (!currentUserId) return;
@@ -302,22 +277,15 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                         )}
 
                         {currentUserId === trade?.buyer_id && (trade?.status === 'AwaitingPayment' || trade?.status === 'Pending') && (
-                            <>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleUploadReceipt}
-                                    className="hidden"
-                                    accept="image/*"
+                            <div className="w-full max-w-md mx-auto">
+                                <ReceiptUploader
+                                    tradeId={tradeId}
+                                    onUploadComplete={(url) => {
+                                        sendMessage(`تم إرفاق إيصال الدفع: ${url}`);
+                                        // Status update is handled inside ReceiptUploader, but real-time subscription will update UI
+                                    }}
                                 />
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isConfirmingPayment}
-                                    className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all disabled:opacity-50"
-                                >
-                                    {isConfirmingPayment ? 'جاري الرفع...' : 'تأكيد الدفع (رفع إيصال)'}
-                                </button>
-                            </>
+                            </div>
                         )}
 
                         {currentUserId === trade?.seller_id && trade?.status === 'Paid' && (
