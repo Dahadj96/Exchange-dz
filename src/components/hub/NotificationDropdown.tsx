@@ -208,13 +208,13 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
                             onClick={() => setIsOpen(false)}
                         />
 
-                        {/* Panel - RIGHT-0 ORIGIN-TOP-RIGHT (Opens toward LEFT) */}
+                        {/* Panel - LEFT-0 ORIGIN-TOP-LEFT (Opens toward RIGHT) */}
                         <motion.div
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute right-0 origin-top-right top-full mt-2 w-96 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl z-[100] overflow-hidden"
+                            className="absolute left-0 origin-top-left top-full mt-2 w-96 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl z-[100] overflow-hidden"
                             style={{ maxWidth: 'calc(100vw - 2rem)' }}
                         >
                             {/* Header */}
