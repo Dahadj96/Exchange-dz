@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, Paperclip, User, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, User, AlertTriangle, MessageSquare } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 import { StatusStepper } from '@/components/trade/StatusStepper';
 import { Message } from '@/types';
@@ -201,7 +201,12 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
             const method = methods[0];
             content = `يرجى الدفع عبر ${method.provider}: ${method.account_identifier}`;
         } else {
-            content = 'يرجى التواصل مع البائع للحصول على تفاصيل الدفع.';
+            const userConfirmed = confirm('لم يتم العثور على طرق دفع محفوظة في حسابك. يمكنك إضافتها في الإعدادات.\n\nهل تريد إرسال رسالة تطلب من المشتري الانتظار قليلاً؟');
+            if (userConfirmed) {
+                content = 'مرحباً، سأقوم بتزويدك بمعلومات الدفع في لحظات.';
+            } else {
+                return; // Cancel action
+            }
         }
 
         if (!currentUserId) return;
@@ -252,7 +257,7 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
 
     if (isLoading) {
         return (
-            <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
+            <div className="fixed inset-0 top-20 bg-slate-50 flex items-center justify-center z-0">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-slate-600 font-medium">جاري التحميل...</p>
@@ -262,190 +267,199 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
     }
 
     return (
-        <div className="h-[calc(100vh-6rem)] flex flex-col">
-            {/* Header with Back Button */}
-            <div className="mb-4 flex items-center justify-between">
-                <div>
+        <div className="fixed inset-0 top-[73px] bg-slate-50 flex flex-col lg:flex-row overflow-hidden z-0 dir-rtl">
+            {/* Sidebar (Right in RTL) */}
+            <div className="w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col h-full overflow-hidden flex-shrink-0 z-10 shadow-sm">
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                     <button
                         onClick={onBack}
-                        className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold mb-1 transition-colors group"
+                        className="p-2 hover:bg-slate-50 rounded-xl text-slate-500 transition-colors"
                     >
-                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                        العودة
+                        <ArrowLeft className="w-5 h-5" />
                     </button>
-                    <h2 className="text-2xl font-black text-slate-900">غرفة التداول <span className="text-slate-400 font-medium text-lg">#{tradeId.slice(0, 8)}</span></h2>
+                    <div className="text-center">
+                        <h2 className="font-black text-slate-900">غرفة التداول</h2>
+                        <span className="text-xs font-bold text-slate-400">#{tradeId.slice(0, 8)}</span>
+                    </div>
+                    <div className="w-9"></div> {/* Spacer for center alignment */}
                 </div>
-                <div className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold border border-emerald-100 shadow-sm">
-                    {trade?.amount_dzd} <span className="text-xs">DZD</span>
-                </div>
-            </div>
 
-            {/* Split View Container */}
-            <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden">
-                {/* Side Section: Status & Actions (40%) */}
-                <div className="flex-shrink-0 lg:w-96 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                    <div className="mb-6 bg-emerald-50 rounded-2xl p-4 border border-emerald-100 text-center">
+                        <p className="text-sm text-emerald-600 font-bold mb-1">مبلغ التداول</p>
+                        <p className="text-3xl font-black text-emerald-700 dir-ltr">{trade?.amount_dzd} DZD</p>
+                        <p className="text-xs text-emerald-500 font-bold mt-1">
+                            مقابل {(trade?.offer as any)?.currency_code}
+                        </p>
+                    </div>
+
                     <StatusStepper currentStep={getCurrentStep()} />
 
                     {/* Cancelled Banner */}
                     {trade?.status === 'Cancelled' && (
-                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 flex items-center gap-3 text-red-700">
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 my-4 flex items-center gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
                             <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-                            <p className="font-bold text-sm">تم إلغاء هذا التداول. لا يمكن القيام بأي إجراءات إضافية.</p>
+                            <p className="font-bold text-sm">تم إلغاء هذا التداول.</p>
                         </div>
                     )}
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col gap-4 mb-4">
-                        <div className="flex justify-center gap-4">
-                            {currentUserId === trade?.seller_id && trade?.status === 'Pending' && (
-                                <button
-                                    onClick={() => {
-                                        fetchSellerPaymentMethods().then(() => handleSendPaymentInfo());
+                    <div className="mt-6 flex flex-col gap-3">
+                        {currentUserId === trade?.seller_id && trade?.status === 'Pending' && (
+                            <button
+                                onClick={() => {
+                                    fetchSellerPaymentMethods().then(() => handleSendPaymentInfo());
+                                }}
+                                className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Send className="w-4 h-4" />
+                                إرسال معلومات الدفع
+                            </button>
+                        )}
+
+                        {currentUserId === trade?.seller_id && (trade?.status === 'Pending' || trade?.status === 'AwaitingPayment') && (
+                            <button
+                                onClick={handleSendPaymentInfo}
+                                className="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm"
+                            >
+                                تحديث معلومات الدفع
+                            </button>
+                        )}
+
+                        {currentUserId === trade?.buyer_id && (trade?.status === 'AwaitingPayment' || trade?.status === 'Pending') && (
+                            <div className="w-full">
+                                <ReceiptUploader
+                                    tradeId={tradeId}
+                                    onUploadComplete={(url) => {
+                                        sendMessage(`تم إرفاق إيصال الدفع: ${url}`);
                                     }}
-                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all"
-                                >
-                                    إرسال معلومات الدفع
-                                </button>
-                            )}
-                            {currentUserId === trade?.seller_id && (trade?.status === 'Pending' || trade?.status === 'AwaitingPayment') && (
-                                <button
-                                    onClick={handleSendPaymentInfo} // Re-send if needed
-                                    className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm"
-                                >
-                                    تحديث معلومات الدفع
-                                </button>
-                            )}
+                                />
+                            </div>
+                        )}
 
-                            {currentUserId === trade?.buyer_id && (trade?.status === 'AwaitingPayment' || trade?.status === 'Pending') && (
-                                <div className="w-full max-w-md mx-auto">
-                                    <ReceiptUploader
-                                        tradeId={tradeId}
-                                        onUploadComplete={(url) => {
-                                            sendMessage(`تم إرفاق إيصال الدفع: ${url}`);
-                                            // Status update is handled inside ReceiptUploader, but real-time subscription will update UI
-                                        }}
-                                    />
-                                </div>
-                            )}
+                        {currentUserId === trade?.seller_id && trade?.status === 'Paid' && (
+                            <button
+                                onClick={async () => {
+                                    if (confirm('هل أنت متأكد من استلام المبلغ؟ سيتم تحرير الأصول للبائع.')) {
+                                        await supabase.from('trades').update({ status: 'Completed' }).eq('id', tradeId);
+                                    }
+                                }}
+                                className="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
+                            >
+                                تأكيد الاستلام وتحرير الأصول
+                            </button>
+                        )}
 
-                            {currentUserId === trade?.seller_id && trade?.status === 'Paid' && (
-                                <button
-                                    onClick={async () => {
-                                        if (confirm('هل أنت متأكد من استلام المبلغ؟ سيتم تحرير الأصول للبائع.')) {
-                                            await supabase.from('trades').update({ status: 'Completed' }).eq('id', tradeId);
-                                        }
-                                    }}
-                                    className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
-                                >
-                                    تأكيد الاستلام وتحرير الأصول
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Cancellation Button */}
                         {(trade?.status === 'Pending' || trade?.status === 'AwaitingPayment') && (
                             <button
                                 onClick={handleCancelTrade}
-                                className="w-full py-3 text-red-600 font-bold hover:bg-red-50 rounded-xl transition-colors border border-transparent hover:border-red-100"
+                                className="w-full py-3 text-red-500 font-bold hover:bg-red-50 rounded-xl transition-colors text-sm"
                             >
                                 إلغاء التداول
                             </button>
                         )}
                     </div>
                 </div>
+            </div>
 
-                {/* Bottom Section: Chat (60%) */}
-                <div className="flex-1 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col min-h-0">
-                    {/* Chat Header */}
-                    <div className="p-6 border-b border-slate-200">
-                        <div className="flex items-center gap-3">
-                            <UserAvatar
-                                avatarUrl={currentUserId === trade?.buyer_id
-                                    ? (trade?.seller as any)?.avatar_url
-                                    : (trade?.buyer as any)?.avatar_url}
-                                username={currentUserId === trade?.buyer_id
+            {/* Main Chat Area */}
+            <div className="flex-1 flex flex-col bg-slate-50 h-full relative">
+                {/* Chat Header */}
+                <div className="h-16 bg-white border-b border-slate-200 flex items-center px-6 justify-between flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                        <UserAvatar
+                            avatarUrl={currentUserId === trade?.buyer_id
+                                ? (trade?.seller as any)?.avatar_url
+                                : (trade?.buyer as any)?.avatar_url}
+                            username={currentUserId === trade?.buyer_id
+                                ? (trade?.seller as any)?.username
+                                : (trade?.buyer as any)?.username}
+                            size="md"
+                        />
+                        <div>
+                            <div className="font-bold text-slate-900">
+                                {currentUserId === trade?.buyer_id
                                     ? (trade?.seller as any)?.username
                                     : (trade?.buyer as any)?.username}
-                                size="md"
-                            />
-                            <div>
-                                <div className="font-black text-slate-900">
-                                    {currentUserId === trade?.buyer_id
-                                        ? (trade?.seller as any)?.username
-                                        : (trade?.buyer as any)?.username}
-                                </div>
-                                <div className="text-xs text-slate-500 font-medium">متصل</div>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                <span className="text-xs text-slate-500 font-bold">متصل الآن</span>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                        {messages.length === 0 ? (
-                            <div className="text-center py-12">
-                                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Send className="w-8 h-8 text-slate-400" />
-                                </div>
-                                <p className="text-slate-400 font-medium">ابدأ المحادثة الآن</p>
-                            </div>
-                        ) : (
-                            messages.map((message, index) => {
-                                const isOwn = message.sender_id === currentUserId;
-                                return (
-                                    <motion.div
-                                        key={message.id}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: index * 0.05 }}
-                                        className={`flex ${isOwn ? 'justify-start' : 'justify-end'}`}
+                {/* Messages List */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6" style={{ scrollBehavior: 'smooth' }}>
+                    {messages.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50">
+                            <MessageSquare className="w-12 h-12 mb-2" />
+                            <p className="font-bold">لا توجد رسائل بعد</p>
+                        </div>
+                    ) : (
+                        messages.map((message, index) => {
+                            const isOwn = message.sender_id === currentUserId;
+                            return (
+                                <motion.div
+                                    key={message.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`flex ${isOwn ? 'justify-start' : 'justify-end'}`}
+                                >
+                                    <div
+                                        className={`
+                                            max-w-[85%] sm:max-w-[70%] px-5 py-3 shadow-sm
+                                            ${isOwn
+                                                ? 'bg-emerald-600 text-white rounded-2xl rounded-br-none'
+                                                : 'bg-white text-slate-800 rounded-2xl rounded-bl-none border border-slate-100'
+                                            }
+                                        `}
                                     >
-                                        <div
-                                            className={`
-                        max-w-[70%] px-5 py-3 rounded-3xl
-                        ${isOwn
-                                                    ? 'bg-emerald-500 text-white rounded-br-md'
-                                                    : 'bg-slate-100 text-slate-900 rounded-bl-md'
-                                                }
-                      `}
-                                        >
-                                            <p className="font-medium text-sm leading-relaxed">{message.content}</p>
-                                            <p className={`text-xs mt-1 ${isOwn ? 'text-emerald-100' : 'text-slate-500'}`}>
-                                                {new Date(message.created_at).toLocaleTimeString('ar', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                })}
-                                            </p>
-                                        </div>
-                                    </motion.div>
-                                );
-                            })
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
+                                        <p className="font-medium text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                                        <p className={`text-[10px] mt-1.5 opacity-70 font-medium text-left dir-ltr`}>
+                                            {new Date(message.created_at).toLocaleTimeString('en-US', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            );
+                        })
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
 
-                    {/* Message Input */}
-                    <div className="p-6 border-t border-slate-200">
-                        <div className="flex gap-3">
-                            <button className="w-12 h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
-                                <Paperclip className="w-5 h-5 text-slate-600" />
-                            </button>
-                            <input
-                                type="text"
+                {/* Input Area */}
+                <div className="p-4 bg-white border-t border-slate-200 flex-shrink-0">
+                    <div className="max-w-4xl mx-auto flex items-end gap-3">
+                        <button className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                            <Paperclip className="w-6 h-6" />
+                        </button>
+                        <div className="flex-1 bg-slate-100 rounded-2xl flex items-center px-4 py-2 border border-transparent focus-within:border-emerald-500/50 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all">
+                            <textarea
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendMessage();
+                                    }
+                                }}
                                 placeholder="اكتب رسالتك..."
                                 disabled={trade?.status === 'Cancelled'}
-                                className="flex-1 px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full bg-transparent border-none focus:ring-0 text-slate-900 font-medium placeholder:text-slate-400 resize-none max-h-32 py-2"
+                                rows={1}
+                                style={{ minHeight: '44px' }}
                             />
-                            <button
-                                onClick={handleSendMessage}
-                                disabled={!newMessage.trim() || trade?.status === 'Cancelled'}
-                                className="w-12 h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-lg shadow-emerald-600/20"
-                            >
-                                <Send className="w-5 h-5 text-white" />
-                            </button>
                         </div>
+                        <button
+                            onClick={handleSendMessage}
+                            disabled={!newMessage.trim() || trade?.status === 'Cancelled'}
+                            className="p-3 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95"
+                        >
+                            <Send className="w-6 h-6" />
+                        </button>
                     </div>
                 </div>
             </div>
