@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, Paperclip, User } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, User, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 import { StatusStepper } from '@/components/trade/StatusStepper';
 import { Message } from '@/types';
@@ -48,7 +48,14 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                     filter: `trade_id=eq.${tradeId}`,
                 },
                 (payload: any) => {
-                    setMessages((prev) => [...prev, payload.new as Message]);
+                    const newMessage = payload.new as Message;
+                    setMessages((prev) => {
+                        // Deduplication check
+                        if (prev.some(m => m.id === newMessage.id)) {
+                            return prev;
+                        }
+                        return [...prev, newMessage];
+                    });
                 }
             )
             .subscribe();
@@ -73,6 +80,8 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
         return () => {
             supabase.removeChannel(messageChannel);
             supabase.removeChannel(tradeChannel);
+            messageChannel.unsubscribe();
+            tradeChannel.unsubscribe();
         };
     }, [tradeId]);
 
@@ -142,6 +151,26 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
             });
         } else if (status === 201) {
             setNewMessage('');
+        }
+    };
+
+    const handleCancelTrade = async () => {
+        if (!confirm('هل أنت متأكد من إلغاء هذا التداول؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+
+        try {
+            const { error } = await supabase
+                .from('trades')
+                .update({ status: 'Cancelled' })
+                .eq('id', tradeId);
+
+            if (error) throw error;
+
+            // Send system message about cancellation
+            await sendMessage('تم إلغاء التداول من قبل أحد الأطراف.');
+
+        } catch (error: any) {
+            console.error('Error cancelling trade:', error);
+            alert('حدث خطأ أثناء إلغاء التداول: ' + error.message);
         }
     };
 
@@ -255,49 +284,69 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                 <div className="flex-shrink-0">
                     <StatusStepper currentStep={getCurrentStep()} />
 
+                    {/* Cancelled Banner */}
+                    {trade?.status === 'Cancelled' && (
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 flex items-center gap-3 text-red-700">
+                            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                            <p className="font-bold text-sm">تم إلغاء هذا التداول. لا يمكن القيام بأي إجراءات إضافية.</p>
+                        </div>
+                    )}
+
                     {/* Action Buttons */}
-                    <div className="flex justify-center gap-4 mb-4">
-                        {currentUserId === trade?.seller_id && trade?.status === 'Pending' && (
-                            <button
-                                onClick={() => {
-                                    fetchSellerPaymentMethods().then(() => handleSendPaymentInfo());
-                                }}
-                                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all"
-                            >
-                                إرسال معلومات الدفع
-                            </button>
-                        )}
-                        {currentUserId === trade?.seller_id && (trade?.status === 'Pending' || trade?.status === 'AwaitingPayment') && (
-                            <button
-                                onClick={handleSendPaymentInfo} // Re-send if needed
-                                className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm"
-                            >
-                                تحديث معلومات الدفع
-                            </button>
-                        )}
-
-                        {currentUserId === trade?.buyer_id && (trade?.status === 'AwaitingPayment' || trade?.status === 'Pending') && (
-                            <div className="w-full max-w-md mx-auto">
-                                <ReceiptUploader
-                                    tradeId={tradeId}
-                                    onUploadComplete={(url) => {
-                                        sendMessage(`تم إرفاق إيصال الدفع: ${url}`);
-                                        // Status update is handled inside ReceiptUploader, but real-time subscription will update UI
+                    <div className="flex flex-col gap-4 mb-4">
+                        <div className="flex justify-center gap-4">
+                            {currentUserId === trade?.seller_id && trade?.status === 'Pending' && (
+                                <button
+                                    onClick={() => {
+                                        fetchSellerPaymentMethods().then(() => handleSendPaymentInfo());
                                     }}
-                                />
-                            </div>
-                        )}
+                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all"
+                                >
+                                    إرسال معلومات الدفع
+                                </button>
+                            )}
+                            {currentUserId === trade?.seller_id && (trade?.status === 'Pending' || trade?.status === 'AwaitingPayment') && (
+                                <button
+                                    onClick={handleSendPaymentInfo} // Re-send if needed
+                                    className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm"
+                                >
+                                    تحديث معلومات الدفع
+                                </button>
+                            )}
 
-                        {currentUserId === trade?.seller_id && trade?.status === 'Paid' && (
+                            {currentUserId === trade?.buyer_id && (trade?.status === 'AwaitingPayment' || trade?.status === 'Pending') && (
+                                <div className="w-full max-w-md mx-auto">
+                                    <ReceiptUploader
+                                        tradeId={tradeId}
+                                        onUploadComplete={(url) => {
+                                            sendMessage(`تم إرفاق إيصال الدفع: ${url}`);
+                                            // Status update is handled inside ReceiptUploader, but real-time subscription will update UI
+                                        }}
+                                    />
+                                </div>
+                            )}
+
+                            {currentUserId === trade?.seller_id && trade?.status === 'Paid' && (
+                                <button
+                                    onClick={async () => {
+                                        if (confirm('هل أنت متأكد من استلام المبلغ؟ سيتم تحرير الأصول للبائع.')) {
+                                            await supabase.from('trades').update({ status: 'Completed' }).eq('id', tradeId);
+                                        }
+                                    }}
+                                    className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
+                                >
+                                    تأكيد الاستلام وتحرير الأصول
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Cancellation Button */}
+                        {(trade?.status === 'Pending' || trade?.status === 'AwaitingPayment') && (
                             <button
-                                onClick={async () => {
-                                    if (confirm('هل أنت متأكد من استلام المبلغ؟ سيتم تحرير الأصول للبائع.')) {
-                                        await supabase.from('trades').update({ status: 'Completed' }).eq('id', tradeId);
-                                    }
-                                }}
-                                className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
+                                onClick={handleCancelTrade}
+                                className="w-full py-3 text-red-600 font-bold hover:bg-red-50 rounded-xl transition-colors border border-transparent hover:border-red-100"
                             >
-                                تأكيد الاستلام وتحرير الأصول
+                                إلغاء التداول
                             </button>
                         )}
                     </div>
@@ -384,11 +433,12 @@ export const TradeRoomView = ({ tradeId, onBack }: TradeRoomViewProps) => {
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                 placeholder="اكتب رسالتك..."
-                                className="flex-1 px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                disabled={trade?.status === 'Cancelled'}
+                                className="flex-1 px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                             <button
                                 onClick={handleSendMessage}
-                                disabled={!newMessage.trim()}
+                                disabled={!newMessage.trim() || trade?.status === 'Cancelled'}
                                 className="w-12 h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-lg shadow-emerald-600/20"
                             >
                                 <Send className="w-5 h-5 text-white" />
